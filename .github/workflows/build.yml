@@ -1,0 +1,115 @@
+name: Build ValCrown
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore ValCrown/ValCrown.csproj
+
+      - name: Publish
+        run: |
+          dotnet publish ValCrown/ValCrown.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -o publish/
+
+      - name: Get version
+        id: version
+        run: |
+          $version = (Get-Item "publish/ValCrown.exe").VersionInfo.ProductVersion
+          if (-not $version) { $version = "1.0.0" }
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Create installer with NSIS
+        run: |
+          choco install nsis -y
+          $version = "${{ steps.version.outputs.VERSION }}"
+          $nsisScript = @"
+          !define APPNAME "ValCrown"
+          !define VERSION "$version"
+          !define PUBLISHER "XOGAMESLTD"
+          !define APPURL "https://valcrown.com"
+          OutFile "ValCrown-Setup-$version.exe"
+          InstallDir "\$PROGRAMFILES64\ValCrown"
+          RequestExecutionLevel admin
+          Name "ValCrown"
+          ShowInstDetails show
+
+          Section "Install"
+            SetOutPath "\$INSTDIR"
+            File "publish\ValCrown.exe"
+            CreateShortcut "\$DESKTOP\ValCrown.lnk" "\$INSTDIR\ValCrown.exe"
+            CreateDirectory "\$SMPROGRAMS\ValCrown"
+            CreateShortcut "\$SMPROGRAMS\ValCrown\ValCrown.lnk" "\$INSTDIR\ValCrown.exe"
+            WriteUninstaller "\$INSTDIR\Uninstall.exe"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "DisplayName" "ValCrown"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "DisplayVersion" "$version"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "Publisher" "XOGAMESLTD"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "URLInfoAbout" "https://valcrown.com"
+            WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "UninstallString" "\$INSTDIR\Uninstall.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            Delete "\$INSTDIR\ValCrown.exe"
+            Delete "\$INSTDIR\Uninstall.exe"
+            Delete "\$DESKTOP\ValCrown.lnk"
+            Delete "\$SMPROGRAMS\ValCrown\ValCrown.lnk"
+            RMDir "\$SMPROGRAMS\ValCrown"
+            RMDir "\$INSTDIR"
+            DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown"
+          SectionEnd
+          "@
+          $nsisScript | Out-File -FilePath "installer.nsi" -Encoding utf8
+          & "C:\Program Files (x86)\NSIS\makensis.exe" installer.nsi
+
+      - name: Upload to VPS
+        env:
+          VPS_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: 187.127.136.104
+          VPS_USER: root
+        run: |
+          $version = "${{ steps.version.outputs.VERSION }}"
+          # Save SSH key
+          $keyPath = "$env:TEMP\vps_key"
+          $env:VPS_KEY | Out-File -FilePath $keyPath -Encoding ascii -NoNewline
+          icacls $keyPath /inheritance:r /grant:r "${env:USERNAME}:(R)"
+          
+          # Upload installer to VPS downloads folder
+          scp -i $keyPath -o StrictHostKeyChecking=no `
+            "ValCrown-Setup-$version.exe" `
+            "${VPS_USER}@${VPS_HOST}:/var/valcrown/downloads/ValCrown-Setup-$version.exe"
+          
+          # Update latest.json on VPS
+          $json = "{`"version`":`"$version`",`"url`":`"https://valcrown.com/download/ValCrown-Setup-$version.exe`",`"date`":`"$(Get-Date -Format 'yyyy-MM-dd')`"}"
+          ssh -i $keyPath -o StrictHostKeyChecking=no `
+            "${VPS_USER}@${VPS_HOST}" `
+            "echo '$json' > /var/valcrown/downloads/latest.json"
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: ValCrown v${{ steps.version.outputs.VERSION }}
+          files: ValCrown-Setup-${{ steps.version.outputs.VERSION }}.exe
+          body: "ValCrown v${{ steps.version.outputs.VERSION }} — Publisher: XOGAMESLTD"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

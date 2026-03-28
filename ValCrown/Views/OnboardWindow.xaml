@@ -1,0 +1,39 @@
+<Window x:Class="ValCrown.Views.OnboardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="ValCrown — Welcome"
+        Height="680" Width="520"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize">
+  <Border CornerRadius="16" Background="#07070f"
+          BorderBrush="#1c1c38" BorderThickness="1">
+    <Border.Effect>
+      <DropShadowEffect Color="#000000" Opacity="0.7" BlurRadius="40" ShadowDepth="0"/>
+    </Border.Effect>
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="38"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
+      <Border Grid.Row="0" Background="#0e0e1c" CornerRadius="16,16,0,0"
+              MouseLeftButtonDown="TitleBar_MouseDown">
+        <Grid>
+          <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="14,0">
+            <Border Width="22" Height="22" CornerRadius="5" Background="#7c6aff" Margin="0,0,8,0">
+              <TextBlock Text="V" Foreground="White" FontWeight="Black" FontSize="12"
+                         HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="ValCrown" Foreground="#f0f0ff" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+          </StackPanel>
+          <Button HorizontalAlignment="Right" Width="46" Height="32" Background="Transparent"
+                  BorderThickness="0" Content="✕" Foreground="#9090c0" Click="CloseBtn_Click"/>
+        </Grid>
+      </Border>
+      <wv2:WebView2 Grid.Row="1" x:Name="WebView" DefaultBackgroundColor="#07070F"/>
+    </Grid>
+  </Border>
+</Window>

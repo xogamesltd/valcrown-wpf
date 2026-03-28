@@ -1,0 +1,15 @@
+<Application x:Class="ValCrown.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="Views/MainWindow.xaml"
+             ShutdownMode="OnExplicitShutdown">
+  <Application.Resources>
+    <ResourceDictionary>
+      <SolidColorBrush x:Key="BgBrush">#07070f</SolidColorBrush>
+      <SolidColorBrush x:Key="AccentBrush">#7c6aff</SolidColorBrush>
+      <SolidColorBrush x:Key="GreenBrush">#00e87a</SolidColorBrush>
+      <SolidColorBrush x:Key="TextBrush">#f0f0ff</SolidColorBrush>
+      <SolidColorBrush x:Key="Text2Brush">#9090c0</SolidColorBrush>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>
