@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-
+<html lang="en">
+<head>
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>ValCrown</title>
@@ -340,46 +341,40 @@ input { font-family: var(--sans); outline: none; border: none; }
 .meter { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-top: 8px; }
 .meter-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
 
+
+/* WPF fixes — no titlebar needed, full height layout */
+html, body { height: 100vh; overflow: hidden; }
+.layout { height: 100vh; }
+/* Fix card styling */
+.card { background: var(--bg1); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 16px; margin-bottom: 12px; }
+.card-head { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+/* Fix grid layouts */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+/* Fix stat cards */
+.stat { background: var(--bg1); border: 1px solid var(--border); border-radius: var(--r); padding: 14px; }
+.stat.ok { border-color: rgba(34,212,122,0.25); }
+.stat.warn { border-color: rgba(245,166,35,0.25); }
+.stat.bad { border-color: rgba(255,77,77,0.25); }
+.stat.info { border-color: rgba(77,159,255,0.25); }
+.stat-val { font-size: 22px; font-weight: 800; font-family: var(--mono); letter-spacing: -1px; }
+.stat-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 2px; }
+.stat-sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+/* Page header */
+.ph { margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+.ph-title { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.ph-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
+/* Smart banner */
+.smart-banner { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r); border: 1px solid; }
+.smart-banner.ok   { background: var(--green-dim);  border-color: rgba(34,212,122,0.2);  }
+.smart-banner.warn { background: var(--yellow-dim); border-color: rgba(245,166,35,0.2);  }
+.smart-banner.bad  { background: var(--red-dim);    border-color: rgba(255,77,77,0.2);   }
+.smart-banner.info { background: var(--accent-dim); border-color: rgba(124,106,255,0.2); }
+
 </style>
 </head>
 <body>
-<meta charset="UTF-8">
-<title>ValCrown</title>
-
-<style>
-/* Game Detection Card */
-.game-card{background:linear-gradient(135deg,rgba(124,106,255,0.15),rgba(34,212,122,0.08));border:1px solid rgba(124,106,255,0.3);border-radius:var(--r-lg);padding:16px;display:none;align-items:center;gap:14px;margin-bottom:12px;position:relative;overflow:hidden;}
-.game-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--green));animation:shimmer 2s infinite;}
-@keyframes shimmer{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
-.gc-icon{font-size:36px;flex-shrink:0;}
-.gc-info{flex:1;}
-.gc-now{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;}
-.gc-name{font-size:18px;font-weight:800;letter-spacing:-0.3px;}
-.gc-meta{font-size:11px;color:var(--text2);margin-top:3px;display:flex;align-items:center;gap:8px;}
-.gc-time{font-size:12px;font-weight:700;color:var(--green);font-family:var(--mono);}
-.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 1s infinite;display:inline-block;}
-.no-game-card{background:var(--bg2);border:1px dashed var(--border2);border-radius:var(--r-lg);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px;color:var(--text3);font-size:13px;}
-
-/* App grid */
-.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.app-tile{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 12px;text-align:center;cursor:pointer;transition:all 0.15s;}
-.app-tile:hover{border-color:var(--accent);background:var(--accent-dim);}
-.app-tile.selected{border-color:var(--accent);background:var(--accent-dim);}
-.app-tile-icon{font-size:24px;margin-bottom:6px;}
-.app-tile-name{font-size:12px;font-weight:600;}
-.app-tile-sub{font-size:10px;color:var(--text3);margin-top:2px;}
-
-/* Target card */
-.target-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;}
-.target-icon{width:40px;height:40px;background:var(--accent);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;}
-.target-name{font-size:14px;font-weight:600;}
-.target-path{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
-.target-actions{margin-left:auto;display:flex;gap:6px;}
-</style>
-
-
-
-    <span class="tbar-name">ValCrown</span>
+<span class="tbar-name">ValCrown</span>
     <span class="tbar-tag">PRO</span>
   </div>
   <div class="tbar-right">
@@ -659,98 +654,105 @@ input { font-family: var(--sans); outline: none; border: none; }
   </div>
 </div>
 <script>
+// ── BRIDGE ───────────────────────────────────────────────────────────────────
 
-// ValCrown WPF Bridge
-// Replaces Electron preload — calls C# via WebView2 PostMessage
+// ValCrown WPF Bridge v2 — connects JS to C# via WebView2
 (function() {
-  var _callbacks = {};
-  var _cbId = 0;
+  'use strict';
+  var _cbs = {};
+  var _id  = 0;
 
-  // C# calls this to return results
   window.__bridgeCallback = function(msg) {
-    var cb = _callbacks[msg.id];
-    if (cb) { delete _callbacks[msg.id]; cb(msg.result); }
+    var cb = _cbs[msg.id];
+    if (cb) { delete _cbs[msg.id]; cb(msg.result); }
   };
 
   function call(action, payload) {
     return new Promise(function(resolve) {
-      var id = 'cb_' + (++_cbId);
-      _callbacks[id] = resolve;
-      window.chrome.webview.postMessage(JSON.stringify({ id: id, action: action, payload: payload || {} }));
+      var id = 'vc_' + (++_id);
+      _cbs[id] = resolve;
+      try {
+        window.chrome.webview.postMessage(JSON.stringify({ id: id, action: action, payload: payload || {} }));
+      } catch(e) {
+        // Fallback if bridge not ready
+        setTimeout(function() { resolve(null); }, 100);
+      }
     });
   }
 
   window.valcrown = {
-    // Storage — persisted encrypted on disk
     store: {
-      get:    function(key)        { return call('store.get',    { key: key }); },
-      set:    function(key, val)   { return call('store.set',    { key: key, value: String(val || '') }); },
-      delete: function(key)        { return call('store.delete', { key: key }); },
-      clear:  function()           { return call('store.clear',  {}); }
+      get:    function(k)      { return call('store.get',    { key: k }); },
+      set:    function(k, v)   { return call('store.set',    { key: k, value: typeof v === 'string' ? v : JSON.stringify(v) }); },
+      delete: function(k)      { return call('store.delete', { key: k }); },
+      clear:  function()       { return call('store.clear',  {}); }
     },
-    // System
-    getSystemInfo:   function()      { return call('system.info',      {}); },
-    getCpuUsage:     function()      { return call('system.cpu',       {}); },
-    getRamUsage:     function()      { return call('system.ram',       {}); },
-    getApiUrl:       function()      { return Promise.resolve('https://api.valcrown.com'); },
-    // Processes
-    getProcesses:    function()      { return call('system.processes', {}); },
-    killProcess:     function(pid)   { return call('process.kill',     { pid: pid }); },
-    // Network
-    pingHost:        function(host)  { return call('network.ping',     { host: host || '8.8.8.8' }); },
-    flushDns:        function()      { return call('network.flush',    {}); },
-    optimizeTcp:     function()      { return call('network.tcp',      {}); },
-    // Boost
-    applyBoost:      function(proc)  { return call('boost.apply',      { process: proc || '' }); },
-    revertBoost:     function()      { return call('boost.revert',     {}); },
-    // Window
-    minimize:        function()      { return call('window.minimize',  {}); },
-    maximize:        function()      { return call('window.maximize',  {}); },
-    close:           function()      { return call('window.hide',      {}); },
-    // Misc
-    getCurrentGame:  function()      { return Promise.resolve(window._currentGame || null); },
-    getSessionTime:  function()      { return Promise.resolve(''); },
-    openExternal:    function(url)   { window.open(url, '_blank'); },
-    notify:          function(t, b)  { /* native notifications via C# */ },
-    // Auth completion — tells C# to open main window
-    completeAuth:    function(data)  {
-      window.chrome.webview.postMessage(JSON.stringify({
-        id: 'auth_' + Date.now(),
-        action: 'auth.complete',
-        payload: data
-      }));
-    }
+    getSystemInfo:   function()     { return call('system.info',      {}); },
+    getCpuUsage:     function()     { return call('system.cpu',       {}); },
+    getRamUsage:     function()     { return call('system.ram',       {}); },
+    getApiUrl:       function()     { return Promise.resolve('https://api.valcrown.com'); },
+    getProcesses:    function()     { return call('system.processes', {}); },
+    killProcess:     function(pid)  { return call('process.kill',     { pid: pid }); },
+    pingHost:        function(h)    { return call('network.ping',     { host: h || '8.8.8.8' }); },
+    flushDns:        function()     { return call('network.flush',    {}); },
+    optimizeTcp:     function()     { return call('network.tcp',      {}); },
+    applyBoost:      function(p)    { return call('boost.apply',      { process: p || '' }); },
+    revertBoost:     function()     { return call('boost.revert',     {}); },
+    minimize:        function()     { return call('window.minimize',  {}); },
+    maximize:        function()     { return call('window.maximize',  {}); },
+    close:           function()     { return call('window.hide',      {}); },
+    getCurrentGame:  function()     { return Promise.resolve(window._currentGame || null); },
+    getSessionTime:  function()     { return Promise.resolve(''); },
+    getSessionHistory: function()   { return Promise.resolve([]); },
+    selectApp:       function()     { return Promise.resolve(null); },
+    openExternal:    function(url)  { window.open(url, '_blank'); },
+    notify:          function(t,b)  { /* handled by C# */ },
+    logout:          function()     { window.valcrown.store.clear().then(function(){ window.location.reload(); }); }
   };
 
-  // Game detection loop (pure JS)
+  // Game detection — runs entirely in JS
   window._currentGame = null;
-  window.startGameDetection = function(onStart, onEnd) {
+  window._gameHistory = [];
+
+  function startGameDetection() {
     setInterval(async function() {
       try {
         var procs = await window.valcrown.getProcesses();
+        if (!procs || !window.GAME_PROCESS_MAP) return;
         var found = null;
-        if (window.GAME_PROCESS_MAP) {
-          for (var i = 0; i < procs.length; i++) {
-            var g = window.GAME_PROCESS_MAP[procs[i].name.toLowerCase()];
-            if (g) { found = g; break; }
-          }
+        for (var i = 0; i < procs.length; i++) {
+          var g = window.GAME_PROCESS_MAP[procs[i].name.toLowerCase()];
+          if (g) { found = g; break; }
         }
         if (found && !window._currentGame) {
           window._currentGame = found;
-          if (onStart) onStart(found);
+          if (window._onGameDetected) window._onGameDetected(found);
         } else if (!found && window._currentGame) {
           var ended = window._currentGame;
           window._currentGame = null;
-          if (onEnd) onEnd({ game: ended, durationFormatted: '0m' });
+          if (window._onGameEnded) window._onGameEnded({ game: ended, durationFormatted: '0m' });
         }
       } catch(e) {}
-    }, 10000);
+    }, 8000);
+  }
+
+  // Start game detection after page loads
+  window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(startGameDetection, 2000);
+  });
+
+  // Fix setupGameDetectionListeners to use our hooks
+  window.setupGameDetectionListeners = function() {
+    window._onGameDetected = function(game) { handleGameDetected(game); };
+    window._onGameEnded    = function(s)    { handleGameEnded(s); };
+    window._onSessionTick  = function(t)    { setEl('session-time', t); };
   };
-  window.stopGameDetection = function() {};
+
 })();
 
 </script>
 <script>
+// ── API ──────────────────────────────────────────────────────────────────────
 // ValCrown API Service
 // All calls to api.valcrown.com go through here
 
@@ -844,6 +846,7 @@ const API = {
 
 </script>
 <script>
+// ── DEVICE ID ────────────────────────────────────────────────────────────────
 // ValCrown Device ID
 // Generates a unique ID for this PC
 // Used for license binding — 1 license = 1 device
@@ -886,6 +889,7 @@ const DeviceID = {
 
 </script>
 <script>
+// ── GAME DATABASE ────────────────────────────────────────────────────────────
 // ValCrown Game Database
 // 200+ games with their process names for auto-detection
 
@@ -1012,6 +1016,7 @@ if (typeof module !== 'undefined') {
 
 </script>
 <script>
+// ── APP LOGIC ────────────────────────────────────────────────────────────────
 'use strict';
 
 // ── STATE ──────────────────────────────────────────────────────────────────────
@@ -1071,7 +1076,7 @@ async function init() {
   startPing();
 
   // Check if a game is already running
-  const activeGame = await window.valcrown.getCurrentGame();
+  const activeGame = window._currentGame || null;
   if (activeGame) handleGameDetected(activeGame);
 
   // Load session history
@@ -1089,15 +1094,15 @@ async function init() {
 
 // ── GAME DETECTION LISTENERS ──────────────────────────────────────────────────
 function setupGameDetectionListeners() {
-  window.valcrown.onGameDetected((game) => {
+  window._onGameDetected = (game) => {
     handleGameDetected(game);
   });
 
-  window.valcrown.onGameEnded((session) => {
+  window._onGameEnded = (session) => {
     handleGameEnded(session);
   });
 
-  window.valcrown.onSessionTick((time) => {
+  window._onSessionTick = (time) => {
     setEl('session-time', time);
     updateTrayDisplay(currentGame, time);
   });
@@ -1185,7 +1190,8 @@ function stopSessionTimer() {
 }
 
 async function loadSessionHistory() {
-  const history = await window.valcrown.getSessionHistory();
+  const histJson = await window.valcrown.store.get('sessionHistory');
+  const history = histJson ? JSON.parse(histJson) : [];
   const el = document.getElementById('session-history');
   if (!el) return;
 
@@ -1319,7 +1325,10 @@ function buildAppGrid() {
   `).join('');
 }
 
-async function pickApp() { const result = await window.valcrown.selectApp(); if (result) setTarget(result); }
+async function pickApp() {
+  const name = prompt('Enter app name (e.g. GeForce NOW):');
+  if (name && name.trim()) setTarget({ name: name.trim(), path: name.trim() + '.exe', icon: '🎮' });
+}
 async function setQuickApp(name) { const app = POPULAR_APPS.find(a => a.name === name); setTarget({ name, path: name + '.exe', icon: app?.icon || '🎮' }); }
 
 async function setTarget(app) {
@@ -1533,7 +1542,8 @@ async function validateSession() {
 async function doLogout() {
   const rt = await window.valcrown.store.get('refreshToken');
   await API.logout(rt);
-  window.valcrown.logout();
+  await window.valcrown.store.clear();
+  window.location.reload();
 }
 
 // ── HELPERS ────────────────────────────────────────────────────────────────────
@@ -1544,3 +1554,4 @@ document.addEventListener('DOMContentLoaded', init);
 
 </script>
 </body>
+</html>
