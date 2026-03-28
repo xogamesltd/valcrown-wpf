@@ -1,25 +1,30 @@
+// Explicit aliases to resolve ambiguity between WPF and WinForms
+using WpfApp = System.Windows.Application;
+using WpfWindow = System.Windows.Window;
+using WinFormsNotifyIcon = System.Windows.Forms.NotifyIcon;
+using WinFormsContextMenu = System.Windows.Forms.ContextMenuStrip;
 using System.Windows;
 using ValCrown.Services;
 using ValCrown.Views;
 
 namespace ValCrown;
 
-public partial class App : Application
+public partial class App : WpfApp
 {
-    private System.Windows.Forms.NotifyIcon? _tray;
+    private WinFormsNotifyIcon? _tray;
     private MainWindow? _main;
 
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
         await StorageService.Init();
-        CreateTray();
+        InitTray();
 
         var token = StorageService.Get("accessToken");
-        if (string.IsNullOrEmpty(token))
+        if (string.IsNullOrWhiteSpace(token))
         {
-            var onboard = new OnboardWindow();
-            onboard.Show();
+            new OnboardWindow().Show();
         }
         else
         {
@@ -32,36 +37,38 @@ public partial class App : Application
         if (_main == null || !_main.IsLoaded)
         {
             _main = new MainWindow();
-            _main.Closed += (s, ev) => { _main = null; };
+            _main.Closed += (_, _) => _main = null;
         }
         _main.Show();
+        _main.WindowState = WindowState.Normal;
         _main.Activate();
     }
 
-    private void CreateTray()
+    private void InitTray()
     {
-        _tray = new System.Windows.Forms.NotifyIcon
+        _tray = new WinFormsNotifyIcon
         {
-            Text = "ValCrown",
-            Visible = true
+            Text    = "ValCrown — Gaming Optimizer",
+            Visible = true,
+            Icon    = System.Drawing.SystemIcons.Application
         };
 
-        try
-        {
-            _tray.Icon = System.Drawing.SystemIcons.Application;
-        }
-        catch { }
-
-        var menu = new System.Windows.Forms.ContextMenuStrip();
-        menu.Items.Add("Open ValCrown", null, (s, ev) => ShowMain());
+        var menu = new WinFormsContextMenu();
+        menu.Items.Add("Open ValCrown", null, (_, _) => Dispatcher.Invoke(ShowMain));
         menu.Items.Add("-");
-        menu.Items.Add("Quit", null, (s, ev) => { _tray.Visible = false; Shutdown(); });
+        menu.Items.Add("Quit", null, (_, _) => Dispatcher.Invoke(() =>
+        {
+            _tray!.Visible = false;
+            Shutdown();
+        }));
+
         _tray.ContextMenuStrip = menu;
-        _tray.DoubleClick += (s, ev) => ShowMain();
+        _tray.DoubleClick     += (_, _) => Dispatcher.Invoke(ShowMain);
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _tray?.Visible = false;
         _tray?.Dispose();
         base.OnExit(e);
     }

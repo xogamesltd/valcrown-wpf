@@ -17,31 +17,33 @@ public partial class OnboardWindow : Window
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         await WebView.EnsureCoreWebView2Async();
-        var wv = WebView.CoreWebView2;
-        wv.Settings.AreDefaultContextMenusEnabled = false;
-        wv.Settings.AreDevToolsEnabled = false;
-        wv.WebMessageReceived += OnWebMessage;
-        wv.Navigate("https://valcrown.com/auth.html");
+
+        var core = WebView.CoreWebView2;
+        core.Settings.AreDefaultContextMenusEnabled = false;
+        core.Settings.AreDevToolsEnabled            = false;
+        core.WebMessageReceived += OnWebMessageReceived;
+
+        // Load the auth page from website
+        core.Navigate("https://valcrown.com/auth.html");
     }
 
-    private void OnWebMessage(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
+    private void OnWebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
     {
         try
         {
-            var msg = JsonSerializer.Deserialize<AuthMessage>(e.WebMessageAsJson);
-            if (msg == null || msg.Action != "auth.complete") return;
+            var msg = JsonSerializer.Deserialize<OnboardMessage>(
+                e.WebMessageAsJson,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            var token = msg.AccessToken ?? "";
-            var refresh = msg.RefreshToken ?? "";
-            var user = msg.UserJson ?? "{}";
+            if (msg is null || msg.Action != "auth.complete") return;
 
-            StorageService.Set("accessToken", token);
-            StorageService.Set("refreshToken", refresh);
-            StorageService.Set("user", user);
+            StorageService.Set("accessToken",  msg.AccessToken  ?? string.Empty);
+            StorageService.Set("refreshToken", msg.RefreshToken ?? string.Empty);
+            StorageService.Set("user",         msg.UserJson     ?? "{}");
 
             Dispatcher.Invoke(() =>
             {
-                ((App)Application.Current).ShowMain();
+                (System.Windows.Application.Current as App)?.ShowMain();
                 Close();
             });
         }
@@ -50,19 +52,18 @@ public partial class OnboardWindow : Window
 
     private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.ChangedButton == MouseButton.Left) DragMove();
+        if (e.ChangedButton == MouseButton.Left && e.ButtonState == MouseButtonState.Pressed)
+            DragMove();
     }
 
     private void CloseBtn_Click(object sender, RoutedEventArgs e)
-    {
-        Application.Current.Shutdown();
-    }
+        => System.Windows.Application.Current.Shutdown();
 }
 
-public class AuthMessage
+public sealed class OnboardMessage
 {
-    public string Action { get; set; } = "";
-    public string? AccessToken { get; set; }
-    public string? RefreshToken { get; set; }
-    public string? UserJson { get; set; }
+    public string  Action        { get; set; } = string.Empty;
+    public string? AccessToken   { get; set; }
+    public string? RefreshToken  { get; set; }
+    public string? UserJson      { get; set; }
 }
