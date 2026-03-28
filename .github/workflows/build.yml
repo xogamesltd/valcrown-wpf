@@ -10,6 +10,21 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate version
+        id: ver
+        shell: pwsh
+        run: |
+          $commits = git rev-list --count HEAD
+          $short   = git rev-parse --short HEAD
+          $version = "1.0.$commits"
+          $tag     = "v$version"
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "TAG=$tag"         >> $env:GITHUB_OUTPUT
+          echo "SHORT=$short"     >> $env:GITHUB_OUTPUT
+          Write-Host "Version: $version | Tag: $tag | Commit: $short"
 
       - uses: actions/setup-dotnet@v4
         with:
@@ -19,6 +34,7 @@ jobs:
         run: dotnet restore ValCrown/ValCrown.csproj
 
       - name: Publish
+        shell: pwsh
         run: >
           dotnet publish ValCrown/ValCrown.csproj
           -c Release
@@ -26,6 +42,9 @@ jobs:
           --self-contained true
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:Version=${{ steps.ver.outputs.VERSION }}
+          -p:FileVersion=${{ steps.ver.outputs.VERSION }}
+          -p:AssemblyVersion=${{ steps.ver.outputs.VERSION }}
           -o publish/
 
       - name: Install NSIS
@@ -34,10 +53,11 @@ jobs:
       - name: Create NSIS script
         shell: pwsh
         run: |
+          $v = "${{ steps.ver.outputs.VERSION }}"
           $lines = [System.Collections.Generic.List[string]]::new()
           $lines.Add('!define APPNAME "ValCrown"')
-          $lines.Add('!define VERSION "1.0.0"')
-          $lines.Add('OutFile "ValCrown-Setup-1.0.0.exe"')
+          $lines.Add("!define VERSION `"$v`"")
+          $lines.Add("OutFile `"ValCrown-Setup-$v.exe`"")
           $lines.Add('InstallDir "$PROGRAMFILES64\ValCrown"')
           $lines.Add('RequestExecutionLevel admin')
           $lines.Add('Name "ValCrown"')
@@ -45,10 +65,8 @@ jobs:
           $lines.Add('Page instfiles')
           $lines.Add('UninstPage instfiles')
           $lines.Add('Section "Install"')
-          $lines.Add('  ; Kill running instance before install')
           $lines.Add('  nsExec::Exec "taskkill /F /IM ValCrown.exe /T"')
           $lines.Add('  Sleep 1500')
-          $lines.Add('  SetOutPath "$INSTDIR"')
           $lines.Add('  SetOutPath "$INSTDIR\Assets"')
           $lines.Add('  File "publish\Assets\app.html"')
           $lines.Add('  SetOutPath "$INSTDIR"')
@@ -59,10 +77,9 @@ jobs:
           $lines.Add('  WriteUninstaller "$INSTDIR\Uninstall.exe"')
           $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "DisplayName" "ValCrown"')
           $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "Publisher" "XOGAMESLTD"')
-          $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "DisplayVersion" "1.0.0"')
+          $lines.Add("  WriteRegStr HKLM `"Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown`" `"DisplayVersion`" `"$v`"")
           $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "UninstallString" "$INSTDIR\Uninstall.exe"')
           $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "URLInfoAbout" "https://valcrown.com"')
-          $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "EstimatedSize" "80000"')
           $lines.Add('SectionEnd')
           $lines.Add('Section "Uninstall"')
           $lines.Add('  nsExec::Exec "taskkill /F /IM ValCrown.exe /T"')
@@ -82,32 +99,18 @@ jobs:
       - name: Build installer
         run: '& "C:\Program Files (x86)\NSIS\makensis.exe" setup.nsi'
 
-      - name: Delete old release
-        run: gh release delete v1.0.0 --yes --repo xogamesltd/valcrown-wpf
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-
-      - name: Delete old tag
-        run: git tag -d v1.0.0 2>$null; git push origin :refs/tags/v1.0.0 2>$null; exit 0
-        continue-on-error: true
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: ValCrown v1.0.0
+          tag_name: ${{ steps.ver.outputs.TAG }}
+          name: ValCrown ${{ steps.ver.outputs.TAG }}
           draft: false
           prerelease: false
-          files: ValCrown-Setup-1.0.0.exe
+          files: ValCrown-Setup-${{ steps.ver.outputs.VERSION }}.exe
           body: |
-            ValCrown v1.0.0 - Cloud Gaming Optimizer
+            ValCrown ${{ steps.ver.outputs.TAG }}
+            Commit: ${{ steps.ver.outputs.SHORT }}
             Publisher: XOGAMESLTD
-            Native C# WPF app - No Electron/Tauri
-
-            Install:
-            1. Download ValCrown-Setup-1.0.0.exe
-            2. Run as Administrator
-            3. Sign in at valcrown.com
+            Built with C# WPF + WebView2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
