@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>ValCrown</title>
+<style>
+/* ValCrown v3 — Dark Gaming UI */
+
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg0: #080808;
+  --bg1: #101010;
+  --bg2: #181818;
+  --bg3: #222222;
+  --bg4: #2a2a2a;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.12);
+  --text1: #f0f0f0;
+  --text2: #888;
+  --text3: #555;
+  --accent: #7c6aff;
+  --accent2: #6254e0;
+  --accent-dim: rgba(124,106,255,0.12);
+  --green: #22d47a;
+  --green-dim: rgba(34,212,122,0.12);
+  --yellow: #f5a623;
+  --yellow-dim: rgba(245,166,35,0.12);
+  --red: #ff4d4d;
+  --red-dim: rgba(255,77,77,0.12);
+  --blue: #4d9fff;
+  --blue-dim: rgba(77,159,255,0.12);
+  --r: 10px;
+  --r-sm: 7px;
+  --r-lg: 14px;
+  --mono:  monospace;
+  --sans:  -apple-system, sans-serif;
+}
+
+html, body { height: 100%; overflow: hidden; font-family: var(--sans); background: var(--bg0); color: var(--text1); font-size: 14px; -webkit-font-smoothing: antialiased; }
+::-webkit-scrollbar { width: 3px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+button { font-family: var(--sans); cursor: pointer; border: none; outline: none; }
+input { font-family: var(--sans); outline: none; border: none; }
+
+/* ── TITLEBAR ── */
+.titlebar {
+  height: 40px; background: var(--bg0);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px; -webkit-app-region: drag; flex-shrink: 0; position: relative; z-index: 10;
+}
+.tbar-left { display: flex; align-items: center; gap: 8px; -webkit-app-region: no-drag; }
+.tbar-logo { width: 20px; height: 20px; background: var(--accent); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+.tbar-name { font-size: 13px; font-weight: 600; letter-spacing: 0.3px; }
+.tbar-tag { font-size: 10px; color: var(--accent); background: var(--accent-dim); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+.tbar-right { display: flex; gap: 6px; -webkit-app-region: no-drag; }
+.wbtn { width: 11px; height: 11px; border-radius: 50%; border: none; cursor: pointer; transition: opacity 0.15s; }
+.wbtn:hover { opacity: 0.75; }
+.wbtn.close { background: #ff5f56; }
+.wbtn.min { background: #ffbd2e; }
+.wbtn.max { background: #27c93f; }
+
+/* ── LAYOUT ── */
+.layout { display: flex; height: calc(100vh - 40px); }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 200px; background: var(--bg1);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  padding: 12px 8px; flex-shrink: 0;
+}
+.nav-section { margin-bottom: 16px; }
+.nav-label { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1.2px; padding: 0 8px; margin-bottom: 4px; }
+.nav-btn {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 10px; border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 500; color: var(--text2);
+  background: none; width: 100%; text-align: left;
+  transition: all 0.15s; margin-bottom: 1px;
+}
+.nav-btn:hover { background: var(--bg3); color: var(--text1); }
+.nav-btn.active { background: var(--accent-dim); color: var(--accent); }
+.nav-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-bottom { margin-top: auto; }
+.user-pill {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.user-av { width: 28px; height: 28px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+.user-nm { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-pl { font-size: 10px; color: var(--accent); font-weight: 600; }
+
+/* ── MAIN ── */
+.main { flex: 1; overflow-y: auto; background: var(--bg0); }
+.page { display: none; padding: 20px; }
+.page.active { display: block; }
+.ph { margin-bottom: 20px; }
+.ph-title { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+.ph-sub { font-size: 13px; color: var(--text2); margin-top: 3px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--bg1); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 16px; margin-bottom: 12px;
+}
+.card-head { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ── GRID ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+
+/* ── STAT BOXES ── */
+.stat {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.stat-val { font-size: 26px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+.stat-lbl { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; }
+.stat-sub { font-size: 11px; color: var(--text2); }
+.stat.ok .stat-val { color: var(--green); }
+.stat.warn .stat-val { color: var(--yellow); }
+.stat.bad .stat-val { color: var(--red); }
+.stat.info .stat-val { color: var(--blue); }
+.stat.accent .stat-val { color: var(--accent); }
+
+/* ── SMART BANNER ── */
+.smart-banner {
+  border-radius: var(--r-lg); padding: 16px 18px;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 12px; border: 1px solid;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.smart-banner.ok { background: var(--green-dim); border-color: rgba(34,212,122,0.2); }
+.smart-banner.warn { background: var(--yellow-dim); border-color: rgba(245,166,35,0.2); }
+.smart-banner.bad { background: var(--red-dim); border-color: rgba(255,77,77,0.2); }
+.smart-banner.info { background: var(--accent-dim); border-color: rgba(124,106,255,0.2); }
+.banner-icon { font-size: 22px; flex-shrink: 0; }
+.banner-text { flex: 1; }
+.banner-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.banner-sub { font-size: 12px; color: var(--text2); line-height: 1.4; }
+.banner-btn {
+  padding: 7px 14px; border-radius: var(--r-sm);
+  font-size: 12px; font-weight: 600; flex-shrink: 0;
+  transition: all 0.15s;
+}
+.banner-btn.green { background: var(--green); color: #000; }
+.banner-btn.green:hover { opacity: 0.85; }
+.banner-btn.yellow { background: var(--yellow); color: #000; }
+.banner-btn.yellow:hover { opacity: 0.85; }
+.banner-btn.accent { background: var(--accent); color: #fff; }
+.banner-btn.accent:hover { background: var(--accent2); }
+
+/* ── BOOST BUTTON ── */
+.boost-btn {
+  width: 100%; height: 52px;
+  border-radius: var(--r); font-size: 14px; font-weight: 700;
+  letter-spacing: 0.3px; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.boost-btn.off { background: var(--bg3); color: var(--text1); border: 1px solid var(--border2); }
+.boost-btn.off:hover { background: var(--accent); border-color: var(--accent); color: #fff; transform: translateY(-1px); }
+.boost-btn.on { background: var(--green); color: #000; border: 1px solid transparent; }
+.boost-btn.on:hover { opacity: 0.85; }
+.pulse { width: 8px; height: 8px; background: currentColor; border-radius: 50%; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+/* ── BUTTONS ── */
+.btn {
+  height: 34px; padding: 0 14px;
+  border-radius: var(--r-sm); font-size: 12px; font-weight: 600;
+  transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent2); }
+.btn-ghost { background: var(--bg3); color: var(--text1); border: 1px solid var(--border2); }
+.btn-ghost:hover { background: var(--bg4); }
+.btn-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,212,122,0.2); }
+.btn-green:hover { background: var(--green); color: #000; }
+.btn-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,77,77,0.2); }
+.btn-red:hover { background: var(--red); color: #fff; }
+.btn-sm { height: 28px; padding: 0 10px; font-size: 11px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── TAGS ── */
+.tag { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.tag-green { background: var(--green-dim); color: var(--green); }
+.tag-yellow { background: var(--yellow-dim); color: var(--yellow); }
+.tag-red { background: var(--red-dim); color: var(--red); }
+.tag-accent { background: var(--accent-dim); color: var(--accent); }
+.tag-blue { background: var(--blue-dim); color: var(--blue); }
+
+/* ── DROP ZONE ── */
+.drop-zone {
+  border: 1.5px dashed var(--border2); border-radius: var(--r-lg);
+  padding: 32px 20px; text-align: center; cursor: pointer;
+  transition: all 0.2s; background: var(--bg2);
+}
+.drop-zone:hover, .drop-zone.over {
+  border-color: var(--accent); background: var(--accent-dim);
+}
+.drop-icon { font-size: 32px; margin-bottom: 10px; }
+.drop-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.drop-sub { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+/* ── TARGET APP ── */
+.target-card {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--r); padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.target-icon {
+  width: 40px; height: 40px; background: var(--accent);
+  border-radius: var(--r-sm); display: flex; align-items: center;
+  justify-content: center; font-size: 18px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.target-name { font-size: 14px; font-weight: 600; }
+.target-path { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+.target-actions { margin-left: auto; display: flex; gap: 6px; }
+
+/* ── POPULAR APPS GRID ── */
+.app-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.app-tile {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 12px;
+  text-align: center; cursor: pointer; transition: all 0.15s;
+}
+.app-tile:hover { border-color: var(--accent); background: var(--accent-dim); }
+.app-tile.selected { border-color: var(--accent); background: var(--accent-dim); }
+.app-tile-icon { font-size: 24px; margin-bottom: 6px; }
+.app-tile-name { font-size: 12px; font-weight: 600; }
+.app-tile-sub { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* ── PROCESS LIST ── */
+.proc-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; background: var(--bg2); border-radius: var(--r-sm);
+  margin-bottom: 6px; border: 1px solid var(--border);
+  transition: border-color 0.15s;
+}
+.proc-item:hover { border-color: var(--border2); }
+.proc-name { font-size: 12px; font-weight: 600; font-family: var(--mono); }
+.proc-info { font-size: 10px; color: var(--text3); margin-top: 2px; }
+.proc-actions { display: flex; gap: 5px; }
+
+/* ── PING DISPLAY ── */
+.ping-big { font-size: 48px; font-weight: 800; font-family: var(--mono); line-height: 1; }
+.ping-unit { font-size: 14px; color: var(--text2); font-weight: 500; }
+.ping-bar { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; margin: 8px 0; }
+.ping-fill { height: 100%; border-radius: 2px; transition: width 0.4s ease; }
+.ping-ok { background: var(--green); }
+.ping-warn { background: var(--yellow); }
+.ping-bad { background: var(--red); }
+
+/* ── CHAT ── */
+.chat-wrap { height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.msg { max-width: 82%; padding: 9px 13px; border-radius: 10px; font-size: 13px; line-height: 1.5; }
+.msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 3px; }
+.msg.ai { align-self: flex-start; background: var(--bg3); color: var(--text1); border-bottom-left-radius: 3px; }
+.chat-row { display: flex; gap: 8px; }
+.chat-inp {
+  flex: 1; background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--r-sm); padding: 9px 12px; color: var(--text1);
+  font-size: 13px; transition: border-color 0.15s;
+}
+.chat-inp:focus { border-color: var(--accent); }
+.chat-inp::placeholder { color: var(--text3); }
+
+/* ── ACTIVITY ── */
+.activity-item {
+  display: flex; gap: 10px; padding: 7px 0;
+  border-bottom: 1px solid var(--border); align-items: baseline;
+}
+.activity-item:last-child { border: none; }
+.activity-time { font-size: 10px; color: var(--text3); font-family: var(--mono); flex-shrink: 0; }
+.activity-msg { font-size: 12px; color: var(--text2); }
+
+/* ── DIVIDER ── */
+.div { height: 1px; background: var(--border); margin: 12px 0; }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 28px; color: var(--text3); font-size: 13px; }
+
+/* ── INPUT ── */
+.inp {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--r-sm); padding: 10px 12px; color: var(--text1);
+  font-size: 13px; transition: border-color 0.15s;
+}
+.inp:focus { border-color: var(--accent); }
+.inp::placeholder { color: var(--text3); }
+.inp-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; display: block; }
+
+/* ── LOGIN ── */
+.login-wrap {
+  width: 100vw; height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: var(--bg0); padding: 32px; -webkit-app-region: no-drag;
+}
+.login-logo { text-align: center; margin-bottom: 28px; }
+.login-icon {
+  width: 56px; height: 56px; background: var(--accent);
+  border-radius: 14px; display: flex; align-items: center;
+  justify-content: center; font-size: 24px; font-weight: 800;
+  color: #fff; margin: 0 auto 12px;
+  box-shadow: 0 8px 32px rgba(124,106,255,0.35);
+}
+.login-title { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+.login-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.login-form { width: 100%; max-width: 340px; }
+.form-grp { margin-bottom: 12px; }
+.login-btn {
+  width: 100%; height: 44px; background: var(--accent); color: #fff;
+  border-radius: var(--r-sm); font-size: 14px; font-weight: 700;
+  transition: all 0.15s; margin-top: 4px; letter-spacing: 0.2px;
+}
+.login-btn:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(124,106,255,0.4); }
+.login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+.login-err {
+  background: var(--red-dim); border: 1px solid rgba(255,77,77,0.2);
+  color: var(--red); padding: 9px 12px; border-radius: var(--r-sm);
+  font-size: 12px; margin-bottom: 12px; display: none;
+}
+.login-err.show { display: block; }
+.login-footer { text-align: center; margin-top: 18px; font-size: 12px; color: var(--text3); }
+.login-footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.login-titlebar { position: fixed; top: 0; left: 0; right: 0; height: 32px; -webkit-app-region: drag; display: flex; align-items: center; justify-content: flex-end; padding: 0 12px; gap: 6px; }
+.login-titlebar .wbtn { -webkit-app-region: no-drag; }
+
+/* ── SPINNER ── */
+.spin { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spinning 0.5s linear infinite; display: inline-block; }
+@keyframes spinning { to { transform: rotate(360deg); } }
+
+/* ── METER BAR ── */
+.meter { height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.meter-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+</style>
+</head>
+<body>
+<meta charset="UTF-8">
+<title>ValCrown</title>
+
+<style>
+/* Game Detection Card */
+.game-card{background:linear-gradient(135deg,rgba(124,106,255,0.15),rgba(34,212,122,0.08));border:1px solid rgba(124,106,255,0.3);border-radius:var(--r-lg);padding:16px;display:none;align-items:center;gap:14px;margin-bottom:12px;position:relative;overflow:hidden;}
+.game-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--green));animation:shimmer 2s infinite;}
+@keyframes shimmer{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
+.gc-icon{font-size:36px;flex-shrink:0;}
+.gc-info{flex:1;}
+.gc-now{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;}
+.gc-name{font-size:18px;font-weight:800;letter-spacing:-0.3px;}
+.gc-meta{font-size:11px;color:var(--text2);margin-top:3px;display:flex;align-items:center;gap:8px;}
+.gc-time{font-size:12px;font-weight:700;color:var(--green);font-family:var(--mono);}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 1s infinite;display:inline-block;}
+.no-game-card{background:var(--bg2);border:1px dashed var(--border2);border-radius:var(--r-lg);padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px;color:var(--text3);font-size:13px;}
+
+/* App grid */
+.app-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.app-tile{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 12px;text-align:center;cursor:pointer;transition:all 0.15s;}
+.app-tile:hover{border-color:var(--accent);background:var(--accent-dim);}
+.app-tile.selected{border-color:var(--accent);background:var(--accent-dim);}
+.app-tile-icon{font-size:24px;margin-bottom:6px;}
+.app-tile-name{font-size:12px;font-weight:600;}
+.app-tile-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+
+/* Target card */
+.target-card{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:12px;}
+.target-icon{width:40px;height:40px;background:var(--accent);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;}
+.target-name{font-size:14px;font-weight:600;}
+.target-path{font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono);}
+.target-actions{margin-left:auto;display:flex;gap:6px;}
+</style>
+
+
+
+    <span class="tbar-name">ValCrown</span>
+    <span class="tbar-tag">PRO</span>
+  </div>
+  <div class="tbar-right">
+    <button class="wbtn min" onclick="window.valcrown.minimize()"></button>
+    <button class="wbtn max" onclick="window.valcrown.maximize()"></button>
+    <button class="wbtn close" onclick="window.valcrown.close()"></button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <button class="nav-btn active" onclick="go('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-btn" onclick="go('sessions-pg')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/></svg>
+        Session History
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Optimize</div>
+      <button class="nav-btn" onclick="go('target')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+        Target App
+      </button>
+      <button class="nav-btn" onclick="go('boost')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Boost Engine
+      </button>
+      <button class="nav-btn" onclick="go('processes');loadProcs()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        Processes
+      </button>
+      <button class="nav-btn" onclick="go('network')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1" fill="currentColor"/></svg>
+        Network
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Tools</div>
+      <button class="nav-btn" onclick="go('ai')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        AI Advisor
+      </button>
+      <button class="nav-btn" onclick="go('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        Settings
+      </button>
+    </div>
+    <div class="nav-bottom">
+      <div class="user-pill">
+        <div class="user-av" id="user-av">?</div>
+        <div>
+          <div class="user-nm" id="user-nm">Loading</div>
+          <div class="user-pl" id="user-pl">Pro</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div id="pg-dashboard" class="page active">
+      <div class="ph">
+        <div class="ph-left"><div class="ph-title">Dashboard</div><div class="ph-sub">ValCrown is monitoring your system in real-time</div></div>
+      </div>
+
+      <!-- Smart Banner -->
+      <div id="smart-banner" style="display:none;margin-bottom:12px;"></div>
+
+      <!-- Game Detection Card -->
+      <div class="game-card" id="game-card">
+        <div class="gc-icon" id="gc-icon">🎮</div>
+        <div class="gc-info">
+          <div class="gc-now"><span class="live-dot"></span>&nbsp; ValCrown is boosting</div>
+          <div class="gc-name" id="gc-name">Game Name</div>
+          <div class="gc-meta">
+            <span id="gc-genre">Gaming</span>
+            <span>·</span>
+            <span class="gc-time" id="session-time">0m 0s</span>
+            <span>·</span>
+            <span id="gc-status">Boosting</span>
+          </div>
+        </div>
+        <button class="btn btn-red btn-sm" onclick="toggleBoost()">Stop Boost</button>
+      </div>
+
+      <!-- No game state -->
+      <div class="no-game-card" id="no-game-card">
+        <span style="font-size:20px;">🎮</span>
+        <span>No game detected — ValCrown monitors 200+ games automatically</span>
+      </div>
+
+      <!-- Stats -->
+      <div class="g4" style="margin-bottom:12px;">
+        <div class="stat" id="st-cpu"><div class="stat-val" id="v-cpu">--</div><div class="stat-lbl">CPU %</div><div class="meter"><div class="meter-fill" id="m-cpu" style="width:0%;background:var(--green)"></div></div></div>
+        <div class="stat" id="st-ram"><div class="stat-val" id="v-ram">--</div><div class="stat-lbl">RAM %</div><div class="meter"><div class="meter-fill" id="m-ram" style="width:0%;background:var(--green)"></div></div></div>
+        <div class="stat info" id="st-ping"><div class="stat-val" id="v-ping">--</div><div class="stat-lbl">Ping ms</div><div class="meter"><div class="meter-fill" id="m-ping" style="width:0%;background:var(--blue)"></div></div></div>
+        <div class="stat" id="st-boost"><div class="stat-val" id="v-boost">OFF</div><div class="stat-lbl">Boost</div><div class="stat-sub" id="v-boost-target">No target</div></div>
+      </div>
+
+      <div class="g2" style="margin-bottom:12px;">
+        <div class="card">
+          <div class="card-head">Quick Boost</div>
+          <button class="boost-btn off" id="dash-boost-btn" onclick="toggleBoost()">Activate Boost</button>
+          <div style="margin-top:8px;font-size:11px;color:var(--text3);" id="dash-target-hint">Set a target app for auto-boost</div>
+        </div>
+        <div class="card">
+          <div class="card-head">System</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2)">CPU</span><span id="si-cpu" style="font-family:var(--mono);font-size:11px;">--</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2)">Cores</span><span id="si-cores" style="font-family:var(--mono);font-size:11px;">--</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2)">RAM</span><span id="si-ram" style="font-family:var(--mono);font-size:11px;">--</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;"><span style="color:var(--text2)">Platform</span><span id="si-os" style="font-family:var(--mono);font-size:11px;">--</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="card-head" style="margin:0">Activity Log</div>
+          <button class="btn btn-ghost btn-sm" onclick="clearLog()">Clear</button>
+        </div>
+        <div id="activity-log" style="max-height:140px;overflow-y:auto;"><div class="empty">Activity will appear here</div></div>
+      </div>
+    </div>
+
+    <!-- SESSION HISTORY -->
+    <div id="pg-sessions-pg" class="page">
+      <div class="ph"><div class="ph-left"><div class="ph-title">Session History</div><div class="ph-sub">Games boosted by ValCrown</div></div></div>
+      <div class="card">
+        <div class="card-head">Recent Gaming Sessions</div>
+        <div id="session-history"><div class="empty">No sessions yet — start a game!</div></div>
+      </div>
+    </div>
+
+    <!-- TARGET APP -->
+    <div id="pg-target" class="page">
+      <div class="ph"><div class="ph-left"><div class="ph-title">Target App</div><div class="ph-sub">ValCrown also auto-detects 200+ games — this is for manual targeting</div></div></div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-head">Manual Target (Optional)</div>
+        <div id="no-target" class="drop-zone" onclick="pickApp()">
+          <div class="drop-icon">🎯</div>
+          <div class="drop-title">Drag app here or click to browse</div>
+          <div class="drop-sub">ValCrown already auto-detects most games<br>Use this to manually target a specific app</div>
+          <br>
+          <button class="btn btn-primary" onclick="event.stopPropagation();pickApp()">Browse Files</button>
+        </div>
+        <div id="has-target" style="display:none;">
+          <div class="target-card">
+            <div class="target-icon" id="t-icon">?</div>
+            <div><div class="target-name" id="t-name">--</div><div class="target-path" id="t-path">--</div></div>
+            <div class="target-actions">
+              <button class="btn btn-green btn-sm" onclick="toggleBoost()">Boost Now</button>
+              <button class="btn btn-ghost btn-sm" onclick="pickApp()">Change</button>
+              <button class="btn btn-red btn-sm" onclick="clearTarget()">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head" style="margin-bottom:10px;">Popular Cloud Gaming Apps</div>
+        <div class="app-grid" id="app-grid"></div>
+      </div>
+    </div>
+
+    <!-- BOOST -->
+    <div id="pg-boost" class="page">
+      <div class="ph"><div class="ph-left"><div class="ph-title">Boost Engine</div><div class="ph-sub">Manual boost controls</div></div></div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-head">Boost Control</div>
+        <button class="boost-btn off" id="boost-btn" onclick="toggleBoost()">Activate Boost</button>
+        <div class="g2" style="margin-top:10px;gap:8px;">
+          <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px;border:1px solid var(--border);"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Process Priority</div><div style="font-size:14px;font-weight:700;" id="b-priority">Normal</div></div>
+          <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px;border:1px solid var(--border);"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Power Plan</div><div style="font-size:14px;font-weight:700;" id="b-power">Balanced</div></div>
+          <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px;border:1px solid var(--border);"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">CPU Affinity</div><div style="font-size:14px;font-weight:700;" id="b-affinity">Default</div></div>
+          <div style="background:var(--bg2);border-radius:var(--r-sm);padding:12px;border:1px solid var(--border);"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px;">Level</div><div style="font-size:14px;font-weight:700;" id="b-level">Off</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="card-head" style="margin:0">AI Recommendation</div>
+          <button class="btn btn-primary btn-sm" onclick="getBoostAdvice()">Analyze Now</button>
+        </div>
+        <div id="boost-advice" style="font-size:13px;color:var(--text2);">Click "Analyze Now" for AI-powered boost recommendation based on your system.</div>
+      </div>
+    </div>
+
+    <!-- PROCESSES -->
+    <div id="pg-processes" class="page">
+      <div class="ph"><div class="ph-left"><div class="ph-title">Process Manager</div><div class="ph-sub">AI-checked background process control</div></div></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div class="card-head" style="margin:0">Running Processes</div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost btn-sm" onclick="loadProcs()">Refresh</button>
+            <button class="btn btn-primary btn-sm" onclick="aiCheckAll()">AI Check All</button>
+          </div>
+        </div>
+        <div id="proc-list"><div class="empty">Click Refresh to load</div></div>
+      </div>
+    </div>
+
+    <!-- NETWORK -->
+    <div id="pg-network" class="page">
+      <div class="ph"><div class="ph-left"><div class="ph-title">Network Optimizer</div><div class="ph-sub">Monitor and optimize your connection</div></div></div>
+      <div class="g2" style="margin-bottom:12px;">
+        <div class="card">
+          <div class="card-head">Live Ping</div>
+          <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:6px;">
+            <div class="ping-big" id="n-ping">--</div>
+            <div class="ping-unit">ms</div>
+          </div>
+          <div class="ping-bar"><div id="n-ping-fill" class="ping-fill ping-ok" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:11px;color:var(--text3)">Quality</span>
+            <span id="n-ping-q" style="font-size:12px;font-weight:600;color:var(--green)">Measuring...</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">Quick Actions</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <button class="btn btn-primary" id="dns-btn" onclick="doFlushDns()" style="width:100%;height:36px;">Flush DNS Cache</button>
+            <button class="btn btn-ghost" onclick="doTcpOpt()" style="width:100%;height:36px;">Optimize TCP Settings</button>
+            <button class="btn btn-ghost" onclick="doNetDiag()" style="width:100%;height:36px;">AI Diagnose Connection</button>
+          </div>
+        </div>
+      </div>
+      <div class="card"><div class="card-head">AI Network Analysis</div><div id="net-diag" style="font-size:13px;color:var(--text2);">Click "AI Diagnose Connection" above.</div></div>
+    </div>
+
+    <!-- AI -->
+    <div id="pg-ai" class="page">
+      <div class="ph"><div class="ph-left"><div class="ph-title">AI Advisor</div><div class="ph-sub">Claude Sonnet 4.6 + Gemini 2.0 Flash</div></div></div>
+      <div class="card">
+        <div class="card-head">Ask Anything</div>
+        <div class="chat-wrap" id="chat-box">
+          <div class="msg ai">Hi! I'm ValCrown AI. Ask me anything about optimizing your PC, reducing lag, fixing network issues, or gaming performance.</div>
+        </div>
+        <div class="chat-row">
+          <input class="chat-inp" id="chat-in" placeholder="e.g. Why is my ping high? How do I boost GTA V?" onkeypress="if(event.key==='Enter')sendMsg()"/>
+          <button class="btn btn-primary" onclick="sendMsg()">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="pg-settings" class="page">
+      <div class="ph"><div class="ph-left"><div class="ph-title">Settings</div><div class="ph-sub">Account and preferences</div></div></div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="card-head">Account</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;">
+          <div><div style="font-size:14px;font-weight:600;" id="s-email">--</div><div style="font-size:12px;color:var(--text2);margin-top:2px;" id="s-plan">Pro Plan</div></div>
+          <button class="btn btn-red" onclick="doLogout()">Sign Out</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">About</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text2)">Version</span><span style="font-family:var(--mono);font-size:12px;">1.0.0</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text2)">Backend</span><span style="font-family:var(--mono);font-size:12px;">api.valcrown.com</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text2)">AI</span><span style="font-family:var(--mono);font-size:12px;">Claude Sonnet 4.6</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--text2)">Game DB</span><span style="font-family:var(--mono);font-size:12px;">200+ titles</span></div>
+          <div class="div"></div>
+          <div style="display:flex;gap:12px;font-size:12px;">
+            <a href="#" onclick="window.valcrown.openExternal('https://valcrown.com')" style="color:var(--accent);text-decoration:none;">Website</a>
+            <a href="#" onclick="window.valcrown.openExternal('mailto:support@valcrown.com')" style="color:var(--accent);text-decoration:none;">Support</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script>
+
+// ValCrown WPF Bridge
+// Replaces Electron preload — calls C# via WebView2 PostMessage
+(function() {
+  var _callbacks = {};
+  var _cbId = 0;
+
+  // C# calls this to return results
+  window.__bridgeCallback = function(msg) {
+    var cb = _callbacks[msg.id];
+    if (cb) { delete _callbacks[msg.id]; cb(msg.result); }
+  };
+
+  function call(action, payload) {
+    return new Promise(function(resolve) {
+      var id = 'cb_' + (++_cbId);
+      _callbacks[id] = resolve;
+      window.chrome.webview.postMessage(JSON.stringify({ id: id, action: action, payload: payload || {} }));
+    });
+  }
+
+  window.valcrown = {
+    // Storage — persisted encrypted on disk
+    store: {
+      get:    function(key)        { return call('store.get',    { key: key }); },
+      set:    function(key, val)   { return call('store.set',    { key: key, value: String(val || '') }); },
+      delete: function(key)        { return call('store.delete', { key: key }); },
+      clear:  function()           { return call('store.clear',  {}); }
+    },
+    // System
+    getSystemInfo:   function()      { return call('system.info',      {}); },
+    getCpuUsage:     function()      { return call('system.cpu',       {}); },
+    getRamUsage:     function()      { return call('system.ram',       {}); },
+    getApiUrl:       function()      { return Promise.resolve('https://api.valcrown.com'); },
+    // Processes
+    getProcesses:    function()      { return call('system.processes', {}); },
+    killProcess:     function(pid)   { return call('process.kill',     { pid: pid }); },
+    // Network
+    pingHost:        function(host)  { return call('network.ping',     { host: host || '8.8.8.8' }); },
+    flushDns:        function()      { return call('network.flush',    {}); },
+    optimizeTcp:     function()      { return call('network.tcp',      {}); },
+    // Boost
+    applyBoost:      function(proc)  { return call('boost.apply',      { process: proc || '' }); },
+    revertBoost:     function()      { return call('boost.revert',     {}); },
+    // Window
+    minimize:        function()      { return call('window.minimize',  {}); },
+    maximize:        function()      { return call('window.maximize',  {}); },
+    close:           function()      { return call('window.hide',      {}); },
+    // Misc
+    getCurrentGame:  function()      { return Promise.resolve(window._currentGame || null); },
+    getSessionTime:  function()      { return Promise.resolve(''); },
+    openExternal:    function(url)   { window.open(url, '_blank'); },
+    notify:          function(t, b)  { /* native notifications via C# */ },
+    // Auth completion — tells C# to open main window
+    completeAuth:    function(data)  {
+      window.chrome.webview.postMessage(JSON.stringify({
+        id: 'auth_' + Date.now(),
+        action: 'auth.complete',
+        payload: data
+      }));
+    }
+  };
+
+  // Game detection loop (pure JS)
+  window._currentGame = null;
+  window.startGameDetection = function(onStart, onEnd) {
+    setInterval(async function() {
+      try {
+        var procs = await window.valcrown.getProcesses();
+        var found = null;
+        if (window.GAME_PROCESS_MAP) {
+          for (var i = 0; i < procs.length; i++) {
+            var g = window.GAME_PROCESS_MAP[procs[i].name.toLowerCase()];
+            if (g) { found = g; break; }
+          }
+        }
+        if (found && !window._currentGame) {
+          window._currentGame = found;
+          if (onStart) onStart(found);
+        } else if (!found && window._currentGame) {
+          var ended = window._currentGame;
+          window._currentGame = null;
+          if (onEnd) onEnd({ game: ended, durationFormatted: '0m' });
+        }
+      } catch(e) {}
+    }, 10000);
+  };
+  window.stopGameDetection = function() {};
+})();
+
+</script>
+<script>
+// ValCrown API Service
+// All calls to api.valcrown.com go through here
+
+const API = {
+  baseUrl: null,
+
+  async init() {
+    this.baseUrl = await window.valcrown.getApiUrl();
+  },
+
+  async request(method, endpoint, data = null, auth = false) {
+    const headers = { 'Content-Type': 'application/json' };
+
+    if (auth) {
+      const token = await window.valcrown.store.get('accessToken');
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const options = { method, headers };
+    if (data) options.body = JSON.stringify(data);
+
+    try {
+      const response = await fetch(`${this.baseUrl}${endpoint}`, options);
+      const json = await response.json();
+
+      if (response.status === 401 && json.code === 'TOKEN_EXPIRED') {
+        const refreshed = await this.refreshToken();
+        if (refreshed) return this.request(method, endpoint, data, auth);
+      }
+
+      return { ok: response.ok, status: response.status, data: json };
+    } catch (err) {
+      return { ok: false, status: 0, data: { error: 'Network error — check your connection' } };
+    }
+  },
+
+  async refreshToken() {
+    const refreshToken = await window.valcrown.store.get('refreshToken');
+    if (!refreshToken) return false;
+
+    const res = await this.request('POST', '/api/auth/refresh', { refreshToken });
+    if (res.ok && res.data.accessToken) {
+      await window.valcrown.store.set('accessToken', res.data.accessToken);
+      return true;
+    }
+    return false;
+  },
+
+  // Auth
+  async login(email, password, deviceVid) {
+    return this.request('POST', '/api/auth/login', { email, password, deviceVid });
+  },
+
+  async validate(deviceVid) {
+    return this.request('POST', '/api/auth/validate', { deviceVid }, true);
+  },
+
+  async logout(refreshToken) {
+    return this.request('POST', '/api/auth/logout', { refreshToken }, true);
+  },
+
+  // Config
+  async getConfig() {
+    return this.request('GET', '/api/config', null, true);
+  },
+
+  async getProcessBlacklist() {
+    return this.request('GET', '/api/config/process-blacklist', null, true);
+  },
+
+  async checkProcess(processName, cpuUsage, ramUsage) {
+    return this.request('POST', '/api/config/process-check', { processName, cpuUsage, ramUsage }, true);
+  },
+
+  async diagnoseNetwork(pingMs, packetLoss, isp, jitter) {
+    return this.request('POST', '/api/config/network-diagnosis', { pingMs, packetLoss, isp, jitter }, true);
+  },
+
+  async getBoostAdvice(systemStats) {
+    return this.request('POST', '/api/config/boost-advice', { systemStats }, true);
+  },
+
+  async askFAQ(question) {
+    return this.request('POST', '/api/config/faq', { question }, true);
+  },
+
+  async getSmartConfig(hardware) {
+    return this.request('POST', '/api/config/smart', { hardware }, true);
+  },
+};
+
+</script>
+<script>
+// ValCrown Device ID
+// Generates a unique ID for this PC
+// Used for license binding — 1 license = 1 device
+
+const DeviceID = {
+  async get() {
+    // Try to get stored VID first
+    const stored = await window.valcrown.store.get('deviceVid');
+    if (stored) return stored;
+
+    // Generate new VID from available browser/system info
+    const vid = await this.generate();
+    await window.valcrown.store.set('deviceVid', vid);
+    return vid;
+  },
+
+  async generate() {
+    // Collect system fingerprint data
+    const data = [
+      navigator.userAgent,
+      navigator.language,
+      navigator.hardwareConcurrency,
+      screen.width,
+      screen.height,
+      screen.colorDepth,
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+      navigator.platform,
+    ].join('|');
+
+    // Hash it to create VID
+    const encoder = new TextEncoder();
+    const dataBuffer = encoder.encode(data);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const vid = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    return `VC-${vid.substring(0, 8)}-${vid.substring(8, 16)}-${vid.substring(16, 24)}-${vid.substring(24, 32)}`.toUpperCase();
+  }
+};
+
+</script>
+<script>
+// ValCrown Game Database
+// 200+ games with their process names for auto-detection
+
+const GAME_DB = [
+  // ── AAA TITLES ──
+  { name: 'GTA V', process: 'GTA5.exe', icon: '🏎️', genre: 'Action' },
+  { name: 'GTA V', process: 'GTAV.exe', icon: '🏎️', genre: 'Action' },
+  { name: 'Red Dead Redemption 2', process: 'RDR2.exe', icon: '🤠', genre: 'Action' },
+  { name: 'Cyberpunk 2077', process: 'Cyberpunk2077.exe', icon: '🌆', genre: 'RPG' },
+  { name: 'Elden Ring', process: 'eldenring.exe', icon: '⚔️', genre: 'RPG' },
+  { name: 'The Witcher 3', process: 'witcher3.exe', icon: '🗡️', genre: 'RPG' },
+
+  // ── BATTLE ROYALE ──
+  { name: 'Fortnite', process: 'FortniteClient-Win64-Shipping.exe', icon: '🎯', genre: 'Battle Royale' },
+  { name: 'Apex Legends', process: 'r5apex.exe', icon: '🔫', genre: 'Battle Royale' },
+  { name: 'Warzone', process: 'cod.exe', icon: '💥', genre: 'Battle Royale' },
+  { name: 'PUBG', process: 'TslGame.exe', icon: '🪖', genre: 'Battle Royale' },
+  { name: 'Fall Guys', process: 'FallGuys_client.exe', icon: '🫘', genre: 'Battle Royale' },
+  { name: 'Warzone 2', process: 'cod_hq.exe', icon: '💥', genre: 'Battle Royale' },
+
+  // ── FPS / TACTICAL ──
+  { name: 'Valorant', process: 'VALORANT-Win64-Shipping.exe', icon: '🎯', genre: 'FPS' },
+  { name: 'CS2', process: 'cs2.exe', icon: '💣', genre: 'FPS' },
+  { name: 'CS:GO', process: 'csgo.exe', icon: '💣', genre: 'FPS' },
+  { name: 'Rainbow Six Siege', process: 'RainbowSix.exe', icon: '🛡️', genre: 'Tactical FPS' },
+  { name: 'Overwatch 2', process: 'Overwatch.exe', icon: '🦸', genre: 'FPS' },
+  { name: 'Battlefield 2042', process: 'bf2042.exe', icon: '🪖', genre: 'FPS' },
+  { name: 'Battlefield V', process: 'bfv.exe', icon: '🪖', genre: 'FPS' },
+  { name: 'Halo Infinite', process: 'HaloInfinite.exe', icon: '🪖', genre: 'FPS' },
+  { name: 'Destiny 2', process: 'destiny2.exe', icon: '🚀', genre: 'FPS' },
+  { name: 'Titanfall 2', process: 'Titanfall2.exe', icon: '🤖', genre: 'FPS' },
+  { name: 'Escape From Tarkov', process: 'EscapeFromTarkov.exe', icon: '🎒', genre: 'FPS' },
+
+  // ── MOBA ──
+  { name: 'League of Legends', process: 'League of Legends.exe', icon: '⚡', genre: 'MOBA' },
+  { name: 'Dota 2', process: 'dota2.exe', icon: '🔮', genre: 'MOBA' },
+  { name: 'SMITE', process: 'Smite.exe', icon: '⚡', genre: 'MOBA' },
+  { name: 'Heroes of the Storm', process: 'HeroesOfTheStorm.exe', icon: '⚡', genre: 'MOBA' },
+
+  // ── SPORTS ──
+  { name: 'FIFA 24', process: 'FC24.exe', icon: '⚽', genre: 'Sports' },
+  { name: 'FIFA 23', process: 'FIFA23.exe', icon: '⚽', genre: 'Sports' },
+  { name: 'eFootball', process: 'eFootball.exe', icon: '⚽', genre: 'Sports' },
+  { name: 'NBA 2K24', process: 'NBA2K24.exe', icon: '🏀', genre: 'Sports' },
+  { name: 'NBA 2K23', process: 'NBA2K23.exe', icon: '🏀', genre: 'Sports' },
+  { name: 'Rocket League', process: 'RocketLeague.exe', icon: '🚗', genre: 'Sports' },
+  { name: 'F1 23', process: 'F1_23.exe', icon: '🏎️', genre: 'Racing' },
+  { name: 'Forza Horizon 5', process: 'ForzaHorizon5.exe', icon: '🚗', genre: 'Racing' },
+  { name: 'Need for Speed', process: 'NFS.exe', icon: '🚗', genre: 'Racing' },
+
+  // ── SURVIVAL / SANDBOX ──
+  { name: 'Minecraft', process: 'javaw.exe', icon: '⛏️', genre: 'Sandbox' },
+  { name: 'Minecraft Bedrock', process: 'Minecraft.Windows.exe', icon: '⛏️', genre: 'Sandbox' },
+  { name: 'Rust', process: 'rust.exe', icon: '🔧', genre: 'Survival' },
+  { name: 'ARK', process: 'ShooterGame.exe', icon: '🦕', genre: 'Survival' },
+  { name: 'Valheim', process: 'valheim.exe', icon: '🪓', genre: 'Survival' },
+  { name: 'Subnautica', process: 'Subnautica.exe', icon: '🐠', genre: 'Survival' },
+  { name: 'The Forest', process: 'TheForest.exe', icon: '🌲', genre: 'Survival' },
+  { name: '7 Days to Die', process: '7DaysToDie.exe', icon: '🧟', genre: 'Survival' },
+  { name: 'DayZ', process: 'DayZ_x64.exe', icon: '🧟', genre: 'Survival' },
+
+  // ── ONLINE MULTIPLAYER ──
+  { name: 'World of Warcraft', process: 'Wow.exe', icon: '🧙', genre: 'MMO' },
+  { name: 'Final Fantasy XIV', process: 'ffxiv_dx11.exe', icon: '🗡️', genre: 'MMO' },
+  { name: 'Lost Ark', process: 'LOSTARK.exe', icon: '⚔️', genre: 'MMO' },
+  { name: 'New World', process: 'NewWorld.exe', icon: '⚓', genre: 'MMO' },
+  { name: 'Among Us', process: 'Among Us.exe', icon: '🚀', genre: 'Social' },
+  { name: 'Roblox', process: 'RobloxPlayerBeta.exe', icon: '🧱', genre: 'Platform' },
+  { name: 'Sea of Thieves', process: 'SoTGame.exe', icon: '⚓', genre: 'Adventure' },
+
+  // ── STRATEGY ──
+  { name: 'Age of Empires IV', process: 'AoE4.exe', icon: '🏰', genre: 'Strategy' },
+  { name: 'Starcraft II', process: 'SC2.exe', icon: '👾', genre: 'Strategy' },
+  { name: 'Civilization VI', process: 'CivilizationVI.exe', icon: '🌍', genre: 'Strategy' },
+  { name: 'Total War', process: 'Warhammer3.exe', icon: '⚔️', genre: 'Strategy' },
+
+  // ── HORROR ──
+  { name: 'Dead by Daylight', process: 'DeadByDaylight-Win64-Shipping.exe', icon: '😱', genre: 'Horror' },
+  { name: 'Phasmophobia', process: 'Phasmophobia.exe', icon: '👻', genre: 'Horror' },
+  { name: 'Resident Evil Village', process: 're8.exe', icon: '🧟', genre: 'Horror' },
+
+  // ── INDIE / POPULAR ──
+  { name: 'Stardew Valley', process: 'Stardew Valley.exe', icon: '🌾', genre: 'Indie' },
+  { name: 'Hades', process: 'Hades.exe', icon: '⚡', genre: 'Indie' },
+  { name: 'Hollow Knight', process: 'hollow_knight.exe', icon: '🦋', genre: 'Indie' },
+  { name: 'Celeste', process: 'Celeste.exe', icon: '🏔️', genre: 'Indie' },
+  { name: 'Terraria', process: 'Terraria.exe', icon: '⛏️', genre: 'Sandbox' },
+  { name: 'Among Trees', process: 'AmongTrees.exe', icon: '🌲', genre: 'Indie' },
+  { name: 'It Takes Two', process: 'ItTakesTwo.exe', icon: '👫', genre: 'Adventure' },
+
+  // ── STEAM PLATFORM ──
+  { name: 'Steam', process: 'steam.exe', icon: '🎮', genre: 'Platform' },
+
+  // ── CLOUD GAMING ──
+  { name: 'GeForce NOW', process: 'GeForceNOW.exe', icon: '☁️', genre: 'Cloud Gaming' },
+  { name: 'Xbox Cloud Gaming', process: 'XboxApp.exe', icon: '☁️', genre: 'Cloud Gaming' },
+  { name: 'Xbox Game Pass', process: 'GamingServices.exe', icon: '🎮', genre: 'Cloud Gaming' },
+  { name: 'Boosteroid', process: 'Boosteroid.exe', icon: '☁️', genre: 'Cloud Gaming' },
+  { name: 'Shadow PC', process: 'Shadow.exe', icon: '☁️', genre: 'Cloud Gaming' },
+  { name: 'Amazon Luna', process: 'Luna.exe', icon: '☁️', genre: 'Cloud Gaming' },
+  { name: 'PlayStation Remote Play', process: 'RemotePlay.exe', icon: '🎮', genre: 'Cloud Gaming' },
+  { name: 'Moonlight', process: 'Moonlight.exe', icon: '🌙', genre: 'Cloud Gaming' },
+  { name: 'Parsec', process: 'parsecd.exe', icon: '☁️', genre: 'Cloud Gaming' },
+  { name: 'Rainway', process: 'Rainway.exe', icon: '☁️', genre: 'Cloud Gaming' },
+
+  // ── LAUNCHERS (detect game running through launcher) ──
+  { name: 'Epic Games', process: 'EpicGamesLauncher.exe', icon: '🎮', genre: 'Launcher' },
+  { name: 'Battle.net', process: 'Battle.net.exe', icon: '🎮', genre: 'Launcher' },
+  { name: 'Origin', process: 'Origin.exe', icon: '🎮', genre: 'Launcher' },
+  { name: 'EA App', process: 'EADesktop.exe', icon: '🎮', genre: 'Launcher' },
+  { name: 'Ubisoft Connect', process: 'UbisoftConnect.exe', icon: '🎮', genre: 'Launcher' },
+  { name: 'GOG Galaxy', process: 'GalaxyClient.exe', icon: '🎮', genre: 'Launcher' },
+];
+
+// Process name → game lookup map (faster detection)
+const GAME_PROCESS_MAP = {};
+GAME_DB.forEach(game => {
+  GAME_PROCESS_MAP[game.process.toLowerCase()] = game;
+});
+
+if (typeof module !== 'undefined') {
+  module.exports = { GAME_DB, GAME_PROCESS_MAP };
+}
+
+</script>
+<script>
+'use strict';
+
+// ── STATE ──────────────────────────────────────────────────────────────────────
+let boostActive = false;
+let targetApp = null;
+let user = null;
+let license = null;
+let lastCpu = 0;
+let lastRam = 0;
+let lastPing = 0;
+let bannerDismissed = false;
+let currentGame = null;
+let sessionTimerInterval = null;
+
+const POPULAR_APPS = [
+  { name: 'GeForce NOW', icon: '☁️', sub: 'NVIDIA Cloud Gaming' },
+  { name: 'Xbox Cloud', icon: '🎯', sub: 'Microsoft xCloud' },
+  { name: 'Boosteroid', icon: '⚡', sub: 'Cloud Gaming' },
+  { name: 'Shadow PC', icon: '👤', sub: 'High-End Cloud PC' },
+  { name: 'PS Remote', icon: '🕹️', sub: 'PlayStation Remote' },
+  { name: 'Amazon Luna', icon: '🌙', sub: 'Amazon Cloud Gaming' },
+];
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+async function init() {
+  await API.init();
+
+  user = await window.valcrown.store.get('user');
+  license = await window.valcrown.store.get('license');
+  targetApp = await window.valcrown.store.get('targetApp') || null;
+
+  if (user) {
+    const initial = (user.fullName || user.email || 'U')[0].toUpperCase();
+    setEl('user-av', initial);
+    setEl('user-nm', user.fullName || user.email.split('@')[0]);
+    setEl('s-email', user.email);
+  }
+  if (license) {
+    const p = capitalize(license.plan) + ' Plan';
+    setEl('user-pl', p);
+    setEl('s-plan', p);
+  }
+
+  // System info
+  const sys = await window.valcrown.getSystemInfo();
+  if (sys) {
+    setEl('si-cpu', sys.cpuModel.length > 26 ? sys.cpuModel.substring(0, 26) + '…' : sys.cpuModel);
+    setEl('si-cores', sys.cpuCores + ' cores');
+    setEl('si-ram', sys.totalRam + ' GB');
+    setEl('si-os', sys.osType);
+  }
+
+  if (targetApp) showTargetApp(targetApp);
+  buildAppGrid();
+  setupGameDetectionListeners();
+  startMetrics();
+  startPing();
+
+  // Check if a game is already running
+  const activeGame = await window.valcrown.getCurrentGame();
+  if (activeGame) handleGameDetected(activeGame);
+
+  // Load session history
+  loadSessionHistory();
+
+  setTimeout(runSmartAnalysis, 3000);
+  setInterval(runSmartAnalysis, 30000);
+  validateSession();
+  setInterval(validateSession, 5 * 60 * 1000);
+
+  log('✅ ValCrown started');
+  log('📡 Connected to api.valcrown.com');
+  log('🎮 Game detector active — monitoring ' + 'processes');
+}
+
+// ── GAME DETECTION LISTENERS ──────────────────────────────────────────────────
+function setupGameDetectionListeners() {
+  window.valcrown.onGameDetected((game) => {
+    handleGameDetected(game);
+  });
+
+  window.valcrown.onGameEnded((session) => {
+    handleGameEnded(session);
+  });
+
+  window.valcrown.onSessionTick((time) => {
+    setEl('session-time', time);
+    updateTrayDisplay(currentGame, time);
+  });
+}
+
+function handleGameDetected(game) {
+  currentGame = game;
+  boostActive = true;
+
+  // Show game card
+  showGameCard(game);
+  updateBoostBtns(true, 'Boosting ' + game.name);
+  setEl('v-boost', 'ON');
+  const stBoost = document.getElementById('st-boost');
+  if (stBoost) stBoost.className = 'stat ok';
+  setEl('b-priority', 'High');
+  setEl('b-power', 'High Performance');
+  setEl('b-level', 'Active');
+
+  log(`🎮 Auto-detected: ${game.name} — Boost activated`);
+
+  // Start session timer in UI
+  startSessionTimer();
+}
+
+function handleGameEnded(session) {
+  currentGame = null;
+  boostActive = false;
+
+  // Hide game card
+  hideGameCard(session);
+  updateBoostBtns(false, targetApp ? 'Boost ' + targetApp.name : 'Activate Boost');
+  setEl('v-boost', 'OFF');
+  const stBoost = document.getElementById('st-boost');
+  if (stBoost) stBoost.className = 'stat';
+  setEl('b-priority', 'Normal');
+  setEl('b-power', 'Balanced');
+  setEl('b-level', 'Off');
+
+  stopSessionTimer();
+  log(`⏹ Session ended: ${session.game.name} — ${session.durationFormatted}`);
+  loadSessionHistory();
+}
+
+function showGameCard(game) {
+  const card = document.getElementById('game-card');
+  const noGame = document.getElementById('no-game-card');
+  if (!card) return;
+
+  document.getElementById('gc-icon').textContent = game.icon || '🎮';
+  document.getElementById('gc-name').textContent = game.name;
+  document.getElementById('gc-genre').textContent = game.genre || 'Gaming';
+  document.getElementById('gc-status').textContent = 'Boosting';
+  document.getElementById('session-time').textContent = '0m 0s';
+
+  card.style.display = 'flex';
+  if (noGame) noGame.style.display = 'none';
+}
+
+function hideGameCard(session) {
+  const card = document.getElementById('game-card');
+  const noGame = document.getElementById('no-game-card');
+  if (card) card.style.display = 'none';
+  if (noGame) noGame.style.display = 'flex';
+}
+
+function startSessionTimer() {
+  if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+  let seconds = 0;
+  sessionTimerInterval = setInterval(() => {
+    seconds++;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    const h = Math.floor(m / 60);
+    const time = h > 0 ? `${h}h ${m % 60}m` : `${m}m ${s}s`;
+    setEl('session-time', time);
+  }, 1000);
+}
+
+function stopSessionTimer() {
+  if (sessionTimerInterval) {
+    clearInterval(sessionTimerInterval);
+    sessionTimerInterval = null;
+  }
+}
+
+async function loadSessionHistory() {
+  const history = await window.valcrown.getSessionHistory();
+  const el = document.getElementById('session-history');
+  if (!el) return;
+
+  if (!history || !history.length) {
+    el.innerHTML = '<div class="empty">No sessions yet — start a game and ValCrown will track it automatically</div>';
+    return;
+  }
+
+  el.innerHTML = history.slice(0, 10).map(s => `
+    <div class="proc-item">
+      <div>
+        <div class="proc-name">${s.game.icon || '🎮'} ${s.game.name}</div>
+        <div class="proc-info">${new Date(s.startTime).toLocaleDateString()} · ${s.durationFormatted}</div>
+      </div>
+      <span class="tag tag-green">Boosted</span>
+    </div>
+  `).join('');
+}
+
+// ── SMART ANALYSIS ────────────────────────────────────────────────────────────
+async function runSmartAnalysis() {
+  if (bannerDismissed || currentGame) return;
+  const banner = document.getElementById('smart-banner');
+  if (!banner) return;
+
+  if (lastCpu > 85) {
+    showBanner('bad', '🔥', 'High CPU detected', `CPU at ${lastCpu}% — activate Boost to free resources for gaming`, 'Activate Boost', () => { toggleBoost(); dismissBanner(); });
+  } else if (lastRam > 80) {
+    showBanner('warn', '💾', 'High RAM detected', `RAM at ${lastRam}% — Boost will suspend background apps`, 'Activate Boost', () => { toggleBoost(); dismissBanner(); });
+  } else if (lastPing > 100) {
+    showBanner('warn', '📡', 'High latency', `Ping is ${lastPing}ms — try AI network diagnosis`, 'Fix Network', () => { go('network'); dismissBanner(); });
+  } else if (!targetApp && !currentGame) {
+    showBanner('info', '🎮', 'No target app set', 'Set your gaming app and ValCrown will boost it automatically', 'Set Target App', () => { go('target'); dismissBanner(); });
+  } else if (!boostActive && lastCpu < 50 && lastRam < 60) {
+    showBanner('ok', '✅', 'System ready for gaming', `CPU ${lastCpu}%, RAM ${lastRam}%, Ping ${lastPing}ms`, null, null);
+  }
+}
+
+function showBanner(type, icon, title, sub, btnLabel, btnAction) {
+  const banner = document.getElementById('smart-banner');
+  if (!banner) return;
+  banner.innerHTML = `
+    <div class="smart-banner ${type}">
+      <div class="banner-icon">${icon}</div>
+      <div class="banner-text">
+        <div class="banner-title">${title}</div>
+        <div class="banner-sub">${sub}</div>
+      </div>
+      ${btnLabel ? `<button class="banner-btn ${type === 'bad' ? 'yellow' : type === 'ok' ? 'green' : 'accent'}" id="banner-action-btn">${btnLabel}</button>` : ''}
+      <button onclick="dismissBanner()" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 0 0 8px;">✕</button>
+    </div>`;
+  banner.style.display = 'block';
+  if (btnLabel && btnAction) {
+    const btn = document.getElementById('banner-action-btn');
+    if (btn) btn.onclick = btnAction;
+  }
+}
+
+function dismissBanner() {
+  const el = document.getElementById('smart-banner');
+  if (el) el.style.display = 'none';
+  bannerDismissed = true;
+  setTimeout(() => bannerDismissed = false, 60000);
+}
+
+function updateTrayDisplay(game, time) {
+  // Tray is updated via main process — this is just UI sync
+}
+
+// ── NAVIGATION ─────────────────────────────────────────────────────────────────
+function go(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-' + name)?.classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.getAttribute('onclick')?.includes("'" + name + "'")) b.classList.add('active');
+  });
+}
+
+// ── METRICS ────────────────────────────────────────────────────────────────────
+function startMetrics() {
+  updateMetrics();
+  setInterval(updateMetrics, 2000);
+}
+
+async function updateMetrics() {
+  const cpu = await window.valcrown.getCpuUsage();
+  const ram = await window.valcrown.getRamUsage();
+  lastCpu = cpu;
+  lastRam = ram;
+  updateStat('st-cpu', 'v-cpu', 'm-cpu', cpu, '%', 70, 85);
+  updateStat('st-ram', 'v-ram', 'm-ram', ram, '%', 75, 88);
+}
+
+function updateStat(cardId, valId, meterId, val, suffix, warn, bad) {
+  const card = document.getElementById(cardId);
+  const valEl = document.getElementById(valId);
+  const meterEl = document.getElementById(meterId);
+  if (!valEl) return;
+  valEl.textContent = val + suffix;
+  if (card) { card.className = 'stat'; card.classList.add(val >= bad ? 'bad' : val >= warn ? 'warn' : 'ok'); }
+  if (meterEl) { meterEl.style.width = Math.min(val, 100) + '%'; meterEl.style.background = val >= bad ? 'var(--red)' : val >= warn ? 'var(--yellow)' : 'var(--green)'; }
+}
+
+// ── PING ───────────────────────────────────────────────────────────────────────
+function startPing() { doPing(); setInterval(doPing, 5000); }
+async function doPing() {
+  const ping = await window.valcrown.pingHost('8.8.8.8');
+  lastPing = ping;
+  ['v-ping', 'n-ping'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = ping; });
+  const card = document.getElementById('st-ping');
+  if (card) { card.className = 'stat'; card.classList.add(ping < 50 ? 'ok' : ping < 100 ? 'warn' : 'bad'); }
+  const fill = document.getElementById('m-ping');
+  if (fill) { fill.style.width = Math.min((ping / 200) * 100, 100) + '%'; fill.style.background = ping < 50 ? 'var(--green)' : ping < 100 ? 'var(--yellow)' : 'var(--red)'; }
+  const nFill = document.getElementById('n-ping-fill');
+  if (nFill) { nFill.style.width = Math.min((ping / 200) * 100, 100) + '%'; nFill.className = 'ping-fill ' + (ping < 50 ? 'ping-ok' : ping < 100 ? 'ping-warn' : 'ping-bad'); }
+  const nQ = document.getElementById('n-ping-q');
+  if (nQ) { nQ.textContent = ping < 30 ? 'Excellent' : ping < 60 ? 'Good' : ping < 100 ? 'Fair' : 'Poor'; nQ.style.color = ping < 60 ? 'var(--green)' : ping < 100 ? 'var(--yellow)' : 'var(--red)'; }
+}
+
+// ── TARGET APP ─────────────────────────────────────────────────────────────────
+function buildAppGrid() {
+  const grid = document.getElementById('app-grid');
+  if (!grid) return;
+  grid.innerHTML = POPULAR_APPS.map(app => `
+    <div class="app-tile" onclick="setQuickApp('${app.name}')">
+      <div class="app-tile-icon">${app.icon}</div>
+      <div class="app-tile-name">${app.name}</div>
+      <div class="app-tile-sub">${app.sub}</div>
+    </div>
+  `).join('');
+}
+
+async function pickApp() { const result = await window.valcrown.selectApp(); if (result) setTarget(result); }
+async function setQuickApp(name) { const app = POPULAR_APPS.find(a => a.name === name); setTarget({ name, path: name + '.exe', icon: app?.icon || '🎮' }); }
+
+async function setTarget(app) {
+  targetApp = app;
+  await window.valcrown.store.set('targetApp', app);
+  showTargetApp(app);
+  log('🎯 Target set: ' + app.name);
+  window.valcrown.notify('ValCrown', app.name + ' — ValCrown will boost it automatically when launched');
+  const hint = document.getElementById('dash-target-hint');
+  if (hint) hint.textContent = 'Target: ' + app.name;
+  document.querySelectorAll('.app-tile').forEach(t => t.classList.toggle('selected', t.querySelector('.app-tile-name')?.textContent === app.name));
+  bannerDismissed = false;
+  runSmartAnalysis();
+}
+
+function showTargetApp(app) {
+  const noT = document.getElementById('no-target');
+  const hasT = document.getElementById('has-target');
+  if (noT) noT.style.display = 'none';
+  if (hasT) hasT.style.display = 'block';
+  setEl('t-icon', app.icon || app.name[0].toUpperCase());
+  setEl('t-name', app.name);
+  setEl('t-path', app.path || '');
+  updateBoostBtns(boostActive, boostActive ? 'Boosting ' + app.name : 'Boost ' + app.name);
+}
+
+async function clearTarget() {
+  targetApp = null;
+  await window.valcrown.store.delete('targetApp');
+  const noT = document.getElementById('no-target');
+  const hasT = document.getElementById('has-target');
+  if (noT) noT.style.display = 'block';
+  if (hasT) hasT.style.display = 'none';
+  document.querySelectorAll('.app-tile').forEach(t => t.classList.remove('selected'));
+  updateBoostBtns(boostActive, 'Activate Boost');
+  log('🗑 Target removed');
+}
+
+// ── BOOST ──────────────────────────────────────────────────────────────────────
+async function toggleBoost() {
+  boostActive = !boostActive;
+  const name = currentGame?.name || targetApp?.name || 'System';
+  if (boostActive) {
+    await window.valcrown.applyBoost(targetApp?.name || null);
+    updateBoostBtns(true, 'Boosting ' + name);
+    setEl('v-boost', 'ON');
+    const card = document.getElementById('st-boost');
+    if (card) card.className = 'stat ok';
+    setEl('b-priority', 'High'); setEl('b-power', 'High Performance'); setEl('b-affinity', 'All Cores'); setEl('b-level', 'Active');
+    log('🚀 Boost activated — ' + name);
+    window.valcrown.notify('ValCrown', 'Boost active — ' + name + ' optimized');
+    dismissBanner();
+  } else {
+    await window.valcrown.revertBoost();
+    updateBoostBtns(false, targetApp ? 'Boost ' + targetApp.name : 'Activate Boost');
+    setEl('v-boost', 'OFF');
+    const card = document.getElementById('st-boost');
+    if (card) card.className = 'stat';
+    setEl('b-priority', 'Normal'); setEl('b-power', 'Balanced'); setEl('b-affinity', 'Default'); setEl('b-level', 'Off');
+    log('⏹ Boost deactivated');
+  }
+}
+
+function updateBoostBtns(active, label) {
+  ['dash-boost-btn', 'boost-btn'].forEach(id => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.className = 'boost-btn ' + (active ? 'on' : 'off');
+    btn.innerHTML = active ? '<div class="pulse"></div>' + label : label;
+  });
+}
+
+async function getBoostAdvice() {
+  const el = document.getElementById('boost-advice');
+  el.innerHTML = '<span style="color:var(--text3)">Analyzing system...</span>';
+  const result = await API.getBoostAdvice({ cpuPercent: lastCpu, ramPercent: lastRam, processCount: 60, game: currentGame?.name || targetApp?.name || 'cloud gaming' });
+  if (result.ok && result.data) {
+    const { level, reason } = result.data;
+    const color = level === 'conservative' ? 'var(--green)' : level === 'medium' ? 'var(--yellow)' : 'var(--red)';
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span class="tag" style="background:${color}22;color:${color};">${(level || 'MEDIUM').toUpperCase()}</span><span style="font-size:11px;color:var(--text3)">AI Recommendation</span></div><div style="font-size:13px;color:var(--text2);line-height:1.5;">${reason}</div><div style="margin-top:10px;"><button class="btn btn-primary btn-sm" onclick="toggleBoost()">Apply Now</button></div>`;
+    setEl('b-level', level || 'Medium');
+  } else { el.innerHTML = '<span style="color:var(--text2)">AI unavailable — add ANTHROPIC_API_KEY to environment variables.</span>'; }
+}
+
+// ── PROCESSES ──────────────────────────────────────────────────────────────────
+async function loadProcs() {
+  const list = document.getElementById('proc-list');
+  list.innerHTML = '<div class="empty">Loading...</div>';
+  const procs = await window.valcrown.getProcesses();
+  if (!procs?.length) { list.innerHTML = '<div class="empty">No processes found</div>'; return; }
+  procs.sort((a, b) => (b.memory || 0) - (a.memory || 0));
+  list.innerHTML = procs.slice(0, 25).map(p => `
+    <div class="proc-item" id="proc-${p.pid}">
+      <div>
+        <div class="proc-name">${p.name}</div>
+        <div class="proc-info">PID ${p.pid} · ${p.memory ? Math.round(p.memory / 1024) + ' MB' : (p.cpu || 0) + '% CPU'}</div>
+      </div>
+      <div class="proc-actions">
+        <button class="btn btn-ghost btn-sm" onclick="aiCheckProc('${p.name}',${p.pid})">AI Check</button>
+        <button class="btn btn-red btn-sm" onclick="killProc(${p.pid},'${p.name}')">Kill</button>
+      </div>
+    </div>`).join('');
+}
+
+async function aiCheckProc(name, pid) {
+  const result = await API.checkProcess(name, 0, 0);
+  if (result.ok && result.data) {
+    const { action, reason } = result.data;
+    const colors = { kill: 'var(--red)', suspend: 'var(--yellow)', skip: 'var(--green)' };
+    const row = document.getElementById('proc-' + pid);
+    if (row) {
+      row.querySelector('.ai-result')?.remove();
+      const div = document.createElement('div');
+      div.className = 'ai-result';
+      div.style.cssText = `font-size:10px;color:${colors[action]||'var(--text2)'};margin-top:2px;`;
+      div.textContent = '🤖 ' + (action || '').toUpperCase() + ' — ' + reason;
+      row.querySelector('.proc-info').after(div);
+    }
+    log('🤖 AI: ' + name + ' → ' + action);
+  }
+}
+
+async function aiCheckAll() {
+  const rows = document.querySelectorAll('.proc-item');
+  if (!rows.length) { loadProcs(); return; }
+  for (const row of Array.from(rows).slice(0, 8)) {
+    const name = row.querySelector('.proc-name')?.textContent;
+    const pid = row.id.split('-')[1];
+    if (name && pid) await aiCheckProc(name, parseInt(pid));
+  }
+}
+
+async function killProc(pid, name) {
+  const ok = await window.valcrown.killProcess(pid);
+  if (ok) { document.getElementById('proc-' + pid)?.remove(); log('🔴 Killed: ' + name); }
+}
+
+// ── NETWORK ────────────────────────────────────────────────────────────────────
+async function doFlushDns() {
+  const btn = document.getElementById('dns-btn');
+  if (btn) { btn.textContent = 'Flushing...'; btn.disabled = true; }
+  const ok = await window.valcrown.flushDns();
+  if (btn) { btn.textContent = 'Flush DNS Cache'; btn.disabled = false; }
+  log(ok ? '🌐 DNS flushed' : '⚠️ DNS flush failed — run as administrator');
+  if (ok) window.valcrown.notify('ValCrown', 'DNS cache flushed');
+}
+
+async function doTcpOpt() {
+  const ok = await window.valcrown.optimizeTcp();
+  log(ok ? '⚡ TCP optimized' : '⚠️ TCP optimization failed');
+  if (ok) window.valcrown.notify('ValCrown', 'TCP settings optimized');
+}
+
+async function doNetDiag() {
+  const el = document.getElementById('net-diag');
+  el.innerHTML = '<span style="color:var(--text3)">Analyzing...</span>';
+  const result = await API.diagnoseNetwork(lastPing, 0.5, 'Unknown', 8);
+  if (result.ok && result.data) {
+    const { severity, diagnosis, fixes, dns_recommendation } = result.data;
+    const tagClass = severity === 'low' ? 'tag-green' : severity === 'medium' ? 'tag-yellow' : 'tag-red';
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;"><span class="tag ${tagClass}">${(severity||'').toUpperCase()}</span><span style="font-size:11px;color:var(--text3)">Ping: ${lastPing}ms</span></div><div style="font-size:13px;margin-bottom:10px;">${diagnosis}</div>${fixes?.length ? fixes.map(f => `<div style="font-size:12px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);">→ ${f}</div>`).join('') : ''}${dns_recommendation && dns_recommendation !== 'current is fine' ? `<div style="margin-top:8px;font-size:12px;color:var(--blue);">💡 Try DNS: ${dns_recommendation}</div>` : ''}`;
+    log('🔍 Network: ' + severity);
+  } else { el.innerHTML = '<span style="color:var(--text2)">AI diagnosis unavailable.</span>'; }
+}
+
+// ── AI CHAT ────────────────────────────────────────────────────────────────────
+async function sendMsg() {
+  const inp = document.getElementById('chat-in');
+  const q = inp.value.trim();
+  if (!q) return;
+  inp.value = '';
+  addMsg(q, 'user');
+  const thinking = addMsg('Thinking...', 'ai');
+  const result = await API.askFAQ(q);
+  thinking.textContent = result.ok ? result.data.answer : 'AI unavailable right now.';
+}
+
+function addMsg(text, who) {
+  const box = document.getElementById('chat-box');
+  const m = document.createElement('div');
+  m.className = 'msg ' + who;
+  m.textContent = text;
+  box.appendChild(m);
+  box.scrollTop = box.scrollHeight;
+  return m;
+}
+
+// ── LOG ────────────────────────────────────────────────────────────────────────
+function log(msg) {
+  const box = document.getElementById('activity-log');
+  if (!box) return;
+  const time = new Date().toLocaleTimeString('en', { hour12: false });
+  const entry = document.createElement('div');
+  entry.className = 'activity-item';
+  entry.innerHTML = `<span class="activity-time">${time}</span><span class="activity-msg">${msg}</span>`;
+  if (box.querySelector('.empty')) box.innerHTML = '';
+  box.insertBefore(entry, box.firstChild);
+  while (box.children.length > 20) box.removeChild(box.lastChild);
+}
+
+function clearLog() { const b = document.getElementById('activity-log'); if (b) b.innerHTML = '<div class="empty">Log cleared</div>'; }
+
+// ── SESSION VALIDATION ─────────────────────────────────────────────────────────
+async function validateSession() {
+  const vid = await DeviceID.get();
+  const result = await API.validate(vid);
+  if (!result.ok && result.data?.code === 'DEVICE_MISMATCH') doLogout();
+}
+
+// ── LOGOUT ─────────────────────────────────────────────────────────────────────
+async function doLogout() {
+  const rt = await window.valcrown.store.get('refreshToken');
+  await API.logout(rt);
+  window.valcrown.logout();
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────────────────
+function setEl(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
+function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+document.addEventListener('DOMContentLoaded', init);
+
+</script>
+</body>

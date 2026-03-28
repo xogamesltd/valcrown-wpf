@@ -15,10 +15,10 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore ValCrown/ValCrown.csproj
 
-      - name: Publish single exe
+      - name: Publish
         run: >
           dotnet publish ValCrown/ValCrown.csproj
           -c Release
@@ -37,7 +37,6 @@ jobs:
           $lines = [System.Collections.Generic.List[string]]::new()
           $lines.Add('!define APPNAME "ValCrown"')
           $lines.Add('!define VERSION "1.0.0"')
-          $lines.Add('!define PUBLISHER "XOGAMESLTD"')
           $lines.Add('OutFile "ValCrown-Setup-1.0.0.exe"')
           $lines.Add('InstallDir "$PROGRAMFILES64\ValCrown"')
           $lines.Add('RequestExecutionLevel admin')
@@ -46,6 +45,12 @@ jobs:
           $lines.Add('Page instfiles')
           $lines.Add('UninstPage instfiles')
           $lines.Add('Section "Install"')
+          $lines.Add('  ; Kill running instance before install')
+          $lines.Add('  nsExec::Exec "taskkill /F /IM ValCrown.exe /T"')
+          $lines.Add('  Sleep 1500')
+          $lines.Add('  SetOutPath "$INSTDIR"')
+          $lines.Add('  SetOutPath "$INSTDIR\Assets"')
+          $lines.Add('  File "publish\Assets\app.html"')
           $lines.Add('  SetOutPath "$INSTDIR"')
           $lines.Add('  File "publish\ValCrown.exe"')
           $lines.Add('  CreateShortcut "$DESKTOP\ValCrown.lnk" "$INSTDIR\ValCrown.exe"')
@@ -57,27 +62,37 @@ jobs:
           $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "DisplayVersion" "1.0.0"')
           $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "UninstallString" "$INSTDIR\Uninstall.exe"')
           $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "URLInfoAbout" "https://valcrown.com"')
+          $lines.Add('  WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown" "EstimatedSize" "80000"')
           $lines.Add('SectionEnd')
           $lines.Add('Section "Uninstall"')
+          $lines.Add('  nsExec::Exec "taskkill /F /IM ValCrown.exe /T"')
+          $lines.Add('  Sleep 1000')
           $lines.Add('  Delete "$INSTDIR\ValCrown.exe"')
+          $lines.Add('  Delete "$INSTDIR\Assets\app.html"')
           $lines.Add('  Delete "$INSTDIR\Uninstall.exe"')
           $lines.Add('  Delete "$DESKTOP\ValCrown.lnk"')
           $lines.Add('  Delete "$SMPROGRAMS\ValCrown\ValCrown.lnk"')
           $lines.Add('  RMDir "$SMPROGRAMS\ValCrown"')
+          $lines.Add('  RMDir "$INSTDIR\Assets"')
           $lines.Add('  RMDir "$INSTDIR"')
           $lines.Add('  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\ValCrown"')
           $lines.Add('SectionEnd')
           [System.IO.File]::WriteAllLines("setup.nsi", $lines)
-          Write-Host "NSIS script written"
-          Get-Content setup.nsi
 
-      - name: Build MSI installer
+      - name: Build installer
         run: '& "C:\Program Files (x86)\NSIS\makensis.exe" setup.nsi'
 
-      - name: Verify installer exists
-        run: dir ValCrown-Setup-1.0.0.exe
+      - name: Delete old release
+        run: gh release delete v1.0.0 --yes --repo xogamesltd/valcrown-wpf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
 
-      - name: Create GitHub Release
+      - name: Delete old tag
+        run: git tag -d v1.0.0 2>$null; git push origin :refs/tags/v1.0.0 2>$null; exit 0
+        continue-on-error: true
+
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0
@@ -88,7 +103,7 @@ jobs:
           body: |
             ValCrown v1.0.0 - Cloud Gaming Optimizer
             Publisher: XOGAMESLTD
-            Built with C# WPF + WebView2
+            Native C# WPF app - No Electron/Tauri
 
             Install:
             1. Download ValCrown-Setup-1.0.0.exe
