@@ -4,7 +4,6 @@ using Microsoft.Web.WebView2.Core;
 using ValCrown.Services;
 using System.Text.Json;
 using System.IO;
-using System.Reflection;
 
 namespace ValCrown.Views;
 
@@ -86,7 +85,7 @@ public partial class MainWindow : Window
     private static string LoadEmbeddedHtml(string filename)
     {
         // Try load from Assets folder next to exe
-        var exeDir  = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? ".";
+        var exeDir  = System.AppContext.BaseDirectory;
         var assetPath = Path.Combine(exeDir, "Assets", filename);
         if (File.Exists(assetPath))
             return File.ReadAllText(assetPath);
