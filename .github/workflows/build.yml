@@ -24,11 +24,24 @@ jobs:
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
           echo "TAG=$tag"         >> $env:GITHUB_OUTPUT
           echo "SHORT=$short"     >> $env:GITHUB_OUTPUT
-          Write-Host "Version: $version | Tag: $tag | Commit: $short"
+          Write-Host "Version: $version | Tag: $tag"
 
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+
+      - name: Stamp version into app.html
+        shell: pwsh
+        run: |
+          $v = "${{ steps.ver.outputs.VERSION }}"
+          $t = "${{ steps.ver.outputs.TAG }}"
+          $html = Get-Content "ValCrown/Assets/app.html" -Raw
+          $html = $html -replace 'Version\s*[\d\.]+', "Version $v"
+          $html = $html -replace '"version":"[\d\.]+"', "`"version`":`"$v`""
+          $html = $html -replace "version: '[\d\.]+'", "version: '$v'"
+          $html = $html -replace '1\.0\.0', $v
+          Set-Content "ValCrown/Assets/app.html" $html -Encoding UTF8
+          Write-Host "Stamped version $v into app.html"
 
       - name: Restore
         run: dotnet restore ValCrown/ValCrown.csproj
@@ -45,6 +58,7 @@ jobs:
           -p:Version=${{ steps.ver.outputs.VERSION }}
           -p:FileVersion=${{ steps.ver.outputs.VERSION }}
           -p:AssemblyVersion=${{ steps.ver.outputs.VERSION }}
+          -p:InformationalVersion=${{ steps.ver.outputs.VERSION }}
           -o publish/
 
       - name: Install NSIS
@@ -111,6 +125,5 @@ jobs:
             ValCrown ${{ steps.ver.outputs.TAG }}
             Commit: ${{ steps.ver.outputs.SHORT }}
             Publisher: XOGAMESLTD
-            Built with C# WPF + WebView2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
