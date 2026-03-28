@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Net.NetworkInformation;
-using ValCrown.Services;
 
 namespace ValCrown.Services;
 
@@ -9,70 +8,55 @@ public static class BridgeService
 {
     public static async Task<object?> Handle(string action, JsonElement payload)
     {
-        return action switch
+        switch (action)
         {
-            // Storage
-            "store.get"    => StorageService.Get(payload.GetString("key")),
-            "store.set"    => StorageService.Set(payload.GetString("key"), payload.GetString("value")),
-            "store.delete" => StorageService.Delete(payload.GetString("key")),
-            "store.clear"  => StorageService.Clear(),
-
-            // System
-            "system.info"     => await GetSystemInfo(),
-            "system.cpu"      => GetCpuUsage(),
-            "system.ram"      => GetRamUsage(),
-            "system.processes"=> GetProcesses(),
-
-            // Network
-            "network.ping"    => await PingHost(payload.TryGetString("host") ?? "8.8.8.8"),
-            "network.flush"   => FlushDns(),
-            "network.tcp"     => OptimizeTcp(),
-
-            // Boost
-            "boost.apply"     => ApplyBoost(payload.TryGetString("process")),
-            "boost.revert"    => RevertBoost(),
-
-            // Process
-            "process.kill"    => KillProcess(payload.GetInt32("pid")),
-
-            // Config
-            "config.apiurl"   => "https://api.valcrown.com",
-            "config.version"  => GetVersion(),
-
-            _ => null
-        };
+            case "store.get":    return StorageService.Get(GetStr(payload, "key"));
+            case "store.set":    return StorageService.Set(GetStr(payload, "key"), GetStr(payload, "value"));
+            case "store.delete": return StorageService.Delete(GetStr(payload, "key"));
+            case "store.clear":  return StorageService.Clear();
+            case "system.info":  return await GetSystemInfo();
+            case "system.cpu":   return GetCpuUsage();
+            case "system.ram":   return GetRamUsage();
+            case "system.processes": return GetProcesses();
+            case "network.ping": return await PingHost(TryGetStr(payload, "host") ?? "8.8.8.8");
+            case "network.flush": return FlushDns();
+            case "network.tcp":  return OptimizeTcp();
+            case "boost.apply":  return ApplyBoost(TryGetStr(payload, "process"));
+            case "boost.revert": return RevertBoost();
+            case "process.kill": return KillProcess(GetInt(payload, "pid"));
+            case "config.apiurl": return "https://api.valcrown.com";
+            case "config.version": return "1.0.0";
+            default: return null;
+        }
     }
 
-    // ── SYSTEM ────────────────────────────────────────────────────────────────
     private static async Task<object> GetSystemInfo()
     {
-        var cpu = "";
-        var cores = 0;
+        var cpu = "Unknown CPU";
         try
         {
-            var p = new Process { StartInfo = new ProcessStartInfo
+            var p = new Process();
+            p.StartInfo = new ProcessStartInfo("powershell",
+                "-NoProfile -Command \"(Get-WmiObject Win32_Processor | Select -First 1).Name\"")
             {
-                FileName = "powershell",
-                Arguments = "-NoProfile -Command \"Get-WmiObject Win32_Processor | Select-Object -First 1 -ExpandProperty Name\"",
-                RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true
-            }};
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
             p.Start();
             cpu = (await p.StandardOutput.ReadToEndAsync()).Trim();
             await p.WaitForExitAsync();
         }
-        catch { cpu = "Unknown CPU"; }
-
-        cores = Environment.ProcessorCount;
-        var totalRam = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024 / 1024;
+        catch { }
 
         return new
         {
-            cpuModel  = cpu,
-            cpuCores  = cores,
-            totalRam  = totalRam,
-            freeRam   = totalRam - (GC.GetTotalMemory(false) / 1024 / 1024 / 1024),
-            hostname  = Environment.MachineName,
-            os        = Environment.OSVersion.VersionString
+            cpuModel = cpu,
+            cpuCores = Environment.ProcessorCount,
+            totalRam = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024 / 1024,
+            freeRam  = GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / 1024 / 1024 / 1024,
+            hostname = Environment.MachineName,
+            os       = Environment.OSVersion.VersionString
         };
     }
 
@@ -80,38 +64,40 @@ public static class BridgeService
     {
         try
         {
-            using var counter = new System.Diagnostics.PerformanceCounter("Processor", "% Processor Time", "_Total");
-            counter.NextValue();
-            System.Threading.Thread.Sleep(100);
-            return counter.NextValue();
+            using var c = new PerformanceCounter("Processor", "% Processor Time", "_Total");
+            c.NextValue();
+            Thread.Sleep(100);
+            return c.NextValue();
         }
         catch { return 0; }
     }
 
-    private static object GetRamUsage()
+    private static double GetRamUsage()
     {
         var info = GC.GetGCMemoryInfo();
-        var total = info.TotalAvailableMemoryBytes;
-        var avail = info.MemoryLoadBytes;
-        if (total == 0) return 0;
-        return (double)avail / total * 100;
+        if (info.TotalAvailableMemoryBytes == 0) return 0;
+        return (double)info.MemoryLoadBytes / info.TotalAvailableMemoryBytes * 100;
     }
 
     private static object GetProcesses()
     {
-        return Process.GetProcesses()
-            .Where(p => { try { return p.MainWindowTitle.Length > 0 || p.ProcessName.Length > 0; } catch { return false; } })
-            .Take(60)
-            .Select(p =>
+        var list = new List<object>();
+        foreach (var p in Process.GetProcesses().Take(60))
+        {
+            try
             {
-                try { return new { name = p.ProcessName + ".exe", pid = p.Id, memoryMb = p.WorkingSet64 / 1024 / 1024 }; }
-                catch { return null; }
-            })
-            .Where(p => p != null)
-            .ToList();
+                list.Add(new
+                {
+                    name = p.ProcessName + ".exe",
+                    pid  = p.Id,
+                    memoryMb = p.WorkingSet64 / 1024 / 1024
+                });
+            }
+            catch { }
+        }
+        return list;
     }
 
-    // ── NETWORK ───────────────────────────────────────────────────────────────
     private static async Task<long> PingHost(string host)
     {
         try
@@ -125,13 +111,7 @@ public static class BridgeService
 
     private static bool FlushDns()
     {
-        try
-        {
-            var p = Process.Start(new ProcessStartInfo("ipconfig", "/flushdns")
-            { CreateNoWindow = true, UseShellExecute = false });
-            p?.WaitForExit();
-            return true;
-        }
+        try { Run("ipconfig", "/flushdns"); return true; }
         catch { return false; }
     }
 
@@ -139,27 +119,22 @@ public static class BridgeService
     {
         try
         {
-            RunCmd("netsh", "int tcp set global autotuninglevel=normal");
-            RunCmd("netsh", "int tcp set global rss=enabled");
+            Run("netsh", "int tcp set global autotuninglevel=normal");
+            Run("netsh", "int tcp set global rss=enabled");
             return true;
         }
         catch { return false; }
     }
 
-    // ── BOOST ─────────────────────────────────────────────────────────────────
     private static bool ApplyBoost(string? processName)
     {
         try
         {
-            // High Performance power plan
-            RunCmd("powercfg", "/setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c");
-
-            // Set process priority
+            Run("powercfg", "/setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c");
             if (!string.IsNullOrEmpty(processName))
             {
-                var procs = Process.GetProcessesByName(
-                    processName.Replace(".exe", "", StringComparison.OrdinalIgnoreCase));
-                foreach (var p in procs)
+                var name = processName.Replace(".exe", "", StringComparison.OrdinalIgnoreCase);
+                foreach (var p in Process.GetProcessesByName(name))
                 {
                     try { p.PriorityClass = ProcessPriorityClass.High; } catch { }
                 }
@@ -171,50 +146,37 @@ public static class BridgeService
 
     private static bool RevertBoost()
     {
-        try
-        {
-            RunCmd("powercfg", "/setactive 381b4222-f694-41f0-9685-ff5bb260df2e");
-            return true;
-        }
+        try { Run("powercfg", "/setactive 381b4222-f694-41f0-9685-ff5bb260df2e"); return true; }
         catch { return false; }
     }
 
-    // ── PROCESS ───────────────────────────────────────────────────────────────
     private static bool KillProcess(int pid)
     {
         try { Process.GetProcessById(pid).Kill(); return true; }
         catch { return false; }
     }
 
-    // ── HELPERS ───────────────────────────────────────────────────────────────
-    private static string GetVersion()
-    {
-        return System.Reflection.Assembly.GetExecutingAssembly()
-            .GetName().Version?.ToString() ?? "1.0.0";
-    }
-
-    private static void RunCmd(string cmd, string args)
+    private static void Run(string cmd, string args)
     {
         Process.Start(new ProcessStartInfo(cmd, args)
-        { CreateNoWindow = true, UseShellExecute = false })?.WaitForExit();
+        {
+            CreateNoWindow = true,
+            UseShellExecute = false
+        })?.WaitForExit();
     }
-}
 
-// Extension helpers
-public static class JsonElementExtensions
-{
-    public static string? TryGetString(this JsonElement el, string key)
+    private static string? GetStr(JsonElement el, string key)
     {
         try { return el.GetProperty(key).GetString(); } catch { return null; }
     }
 
-    public static string GetString(this JsonElement el, string key)
+    private static string? TryGetStr(JsonElement el, string key)
     {
-        return el.GetProperty(key).GetString() ?? "";
+        try { return el.GetProperty(key).GetString(); } catch { return null; }
     }
 
-    public static int GetInt32(this JsonElement el, string key)
+    private static int GetInt(JsonElement el, string key)
     {
-        return el.GetProperty(key).GetInt32();
+        try { return el.GetProperty(key).GetInt32(); } catch { return 0; }
     }
 }

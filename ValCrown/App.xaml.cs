@@ -1,5 +1,4 @@
 using System.Windows;
-using System.IO;
 using ValCrown.Services;
 using ValCrown.Views;
 
@@ -13,15 +12,10 @@ public partial class App : Application
     protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-
-        // Init services
         await StorageService.Init();
-        
-        var token = StorageService.Get("accessToken");
-        
-        // Create tray icon
         CreateTray();
 
+        var token = StorageService.Get("accessToken");
         if (string.IsNullOrEmpty(token))
         {
             var onboard = new OnboardWindow();
@@ -38,7 +32,7 @@ public partial class App : Application
         if (_main == null || !_main.IsLoaded)
         {
             _main = new MainWindow();
-            _main.Closed += (s, e) => { _main = null; };
+            _main.Closed += (s, ev) => { _main = null; };
         }
         _main.Show();
         _main.Activate();
@@ -48,18 +42,22 @@ public partial class App : Application
     {
         _tray = new System.Windows.Forms.NotifyIcon
         {
-            Text = "ValCrown — Gaming Optimizer",
-            Visible = true,
-            Icon = System.Drawing.Icon.ExtractAssociatedIcon(
-                System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName)
+            Text = "ValCrown",
+            Visible = true
         };
 
+        try
+        {
+            _tray.Icon = System.Drawing.SystemIcons.Application;
+        }
+        catch { }
+
         var menu = new System.Windows.Forms.ContextMenuStrip();
-        menu.Items.Add("Open ValCrown", null, (s, e) => ShowMain());
+        menu.Items.Add("Open ValCrown", null, (s, ev) => ShowMain());
         menu.Items.Add("-");
-        menu.Items.Add("Quit", null, (s, e) => { _tray.Visible = false; Shutdown(); });
+        menu.Items.Add("Quit", null, (s, ev) => { _tray.Visible = false; Shutdown(); });
         _tray.ContextMenuStrip = menu;
-        _tray.DoubleClick += (s, e) => ShowMain();
+        _tray.DoubleClick += (s, ev) => ShowMain();
     }
 
     protected override void OnExit(ExitEventArgs e)

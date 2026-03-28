@@ -21,29 +21,29 @@ public partial class OnboardWindow : Window
         wv.Settings.AreDefaultContextMenusEnabled = false;
         wv.Settings.AreDevToolsEnabled = false;
         wv.WebMessageReceived += OnWebMessage;
-
-        // Load onboard page - same auth.html from website but embedded
-        wv.Navigate("https://valcrown.com/auth.html?mode=app");
+        wv.Navigate("https://valcrown.com/auth.html");
     }
 
     private void OnWebMessage(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
     {
         try
         {
-            var msg = JsonSerializer.Deserialize<BridgeMessage>(e.WebMessageAsJson);
-            if (msg?.Action == "auth.complete")
+            var msg = JsonSerializer.Deserialize<AuthMessage>(e.WebMessageAsJson);
+            if (msg == null || msg.Action != "auth.complete") return;
+
+            var token = msg.AccessToken ?? "";
+            var refresh = msg.RefreshToken ?? "";
+            var user = msg.UserJson ?? "{}";
+
+            StorageService.Set("accessToken", token);
+            StorageService.Set("refreshToken", refresh);
+            StorageService.Set("user", user);
+
+            Dispatcher.Invoke(() =>
             {
-                var payload = msg.Payload;
-                StorageService.Set("accessToken", payload.TryGetString("accessToken"));
-                StorageService.Set("refreshToken", payload.TryGetString("refreshToken"));
-                StorageService.Set("user", payload.GetProperty("user").GetRawText());
-                
-                Dispatcher.Invoke(() =>
-                {
-                    ((App)Application.Current).ShowMain();
-                    Close();
-                });
-            }
+                ((App)Application.Current).ShowMain();
+                Close();
+            });
         }
         catch { }
     }
@@ -57,4 +57,12 @@ public partial class OnboardWindow : Window
     {
         Application.Current.Shutdown();
     }
+}
+
+public class AuthMessage
+{
+    public string Action { get; set; } = "";
+    public string? AccessToken { get; set; }
+    public string? RefreshToken { get; set; }
+    public string? UserJson { get; set; }
 }
