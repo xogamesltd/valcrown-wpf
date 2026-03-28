@@ -67,7 +67,7 @@
           <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
             <Button Style="{StaticResource TitleBtn}" Content="&#x2212;" Click="MinBtn_Click"/>
             <Button Style="{StaticResource TitleBtn}" Content="&#x25A1;" Click="MaxBtn_Click" x:Name="MaxBtn"/>
-            <Button Style="{StaticResource TitleBtn}" Content="&#x2715;" Click="CloseBtn_Click">
+            <Button Content="&#x2715;" Click="CloseBtn_Click">
               <Button.Style>
                 <Style TargetType="Button" BasedOn="{StaticResource TitleBtn}">
                   <Style.Triggers>
