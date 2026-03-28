@@ -68,8 +68,7 @@ public partial class App : WpfApp
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _tray?.Visible = false;
-        _tray?.Dispose();
+        if (_tray != null) { _tray.Visible = false; _tray.Dispose(); }
         base.OnExit(e);
     }
 }
